@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="مركز دراسات السلام والتنمية – جامعة السلام – ولاية غرب كردفان">
+  <title>مركز دراسات السلام والتنمية | جامعة السلام</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="ticker" aria-label="الإعلانات">
+    <button class="ticker-arrow" data-prev aria-label="الإعلان السابق">‹</button>
+    <div class="ticker-track" id="tickerTrack"></div>
+    <button class="ticker-arrow" data-next aria-label="الإعلان التالي">›</button>
+    <button class="pause" id="pauseTicker" aria-label="إيقاف الحركة">Ⅱ</button>
+  </div>
+
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="#home" class="brand">
+        <span class="logo"><span>✦</span></span>
+        <span class="brand-text"><strong>مركز دراسات السلام والتنمية</strong><small>جامعة السلام – ولاية غرب كردفان</small></span>
+      </a>
+      <button class="menu-btn" id="menuBtn" aria-label="فتح القائمة">☰</button>
+      <nav id="mainNav">
+        <a class="active" href="#home">الرئيسية</a>
+        <a href="#about">عن المركز</a>
+        <a href="#research">البحوث والدراسات</a>
+        <a href="#programs">البرامج</a>
+        <a href="#news">الأخبار</a>
+        <a href="#contact">تواصل معنا</a>
+      </nav>
+      <div class="search">⌕ <span>ابحث في الموقع...</span></div>
+    </div>
+  </header>
+
+  <main id="home">
+    <section class="hero">
+      <div id="heroSlides"></div>
+      <div class="hero-shade"></div>
+      <div class="container hero-inner">
+        <div class="hero-copy">
+          <span class="hero-kicker">جامعة السلام – ولاية غرب كردفان</span>
+          <h1>مركز دراسات السلام والتنمية</h1>
+          <h2>المعرفة والبحث العلمي من أجل السلام والتنمية المستدامة في السودان</h2>
+          <p>منصة أكاديمية للبحث والحوار وبناء القدرات، ودعم المبادرات التي تسهم في مجتمعات أكثر سلامًا وتماسكًا وتنمية.</p>
+          <a class="gold-btn" href="#about">اكتشف المزيد <b>←</b></a>
+          <div class="hero-side-note">معًا من أجل سلام وتنمية مستدامة</div>
+        </div>
+      </div>
+      <button class="hero-arrow hero-next" aria-label="الشريحة التالية">›</button>
+      <button class="hero-arrow hero-prev" aria-label="الشريحة السابقة">‹</button>
+      <div class="dots" id="heroDots"></div>
+      <div class="photo-credit" id="photoCredit"><span id="photoCreditText"></span> <a id="photoCreditLink" target="_blank" rel="noopener noreferrer"></a></div>
+    </section>
+
+    <section class="services section">
+      <div class="container">
+        <div class="title-row"><span></span><h2>خدماتنا الرئيسية</h2><span></span></div>
+        <div class="service-grid">
+          <a class="service-card blue" href="#research"><i>▤</i><h3>البحوث والدراسات</h3><p>إنتاج المعرفة وإجراء البحوث العلمية التي تسهم في قضايا السلام والتنمية</p><b>←</b></a>
+          <a class="service-card gold" href="#programs"><i>☮</i><h3>بناء السلام</h3><p>تعزيز ثقافة السلام والتعايش والحوار المجتمعي</p><b>←</b></a>
+          <a class="service-card green" href="#programs"><i>♧</i><h3>التنمية المستدامة</h3><p>دعم مبادرات التنمية والمشروعات المجتمعية المستدامة</p><b>←</b></a>
+          <a class="service-card purple" href="#programs"><i>♙</i><h3>التدريب وبناء القدرات</h3><p>تأهيل الكوادر وتطوير المهارات لخدمة المجتمع والتنمية</p><b>←</b></a>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="about section">
+      <div class="container about-grid">
+        <div class="about-gallery">
+          <div class="gallery-main"></div>
+          <div class="gallery-small s1"></div><div class="gallery-small s2"></div><div class="gallery-small s3"></div>
+        </div>
+        <div class="map-panel">
+          <div class="fake-map"><div class="map-pin">●</div><strong>غرب كردفان</strong></div>
+        </div>
+        <div class="about-copy">
+          <span class="section-kicker">عن المركز</span>
+          <h2>معرفة تخدم السلام والتنمية</h2>
+          <p>يعمل مركز دراسات السلام والتنمية بجامعة السلام على دعم البحث العلمي والتعليم والتدريب في مجالات السلام والتنمية، مع تركيز خاص على قضايا غرب كردفان والمجتمعات المحلية.</p>
+          <p>نسعى إلى تحويل المعرفة والدراسات إلى برامج ومبادرات عملية تعزز الحوار والتعايش والتنمية المستدامة.</p>
+          <a class="outline-btn" href="#contact">المزيد عن المركز <b>←</b></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats">
+      <div class="container stats-inner">
+        <div class="stats-motto"><span>✦</span><strong>معًا نبني السلام<br>ونحقق التنمية</strong></div>
+        <div><i>♧</i><strong>20+</strong><span>مشروعًا تنمويًا</span></div>
+        <div><i>🎓</i><strong>15+</strong><span>دورة تدريبية</span></div>
+        <div><i>♙</i><strong>50+</strong><span>مستفيدًا من البرامج</span></div>
+        <div><i>▤</i><strong>100+</strong><span>بحثًا ودراسة علمية</span></div>
+      </div>
+    </section>
+
+    <section id="research" class="research section">
+      <div class="container">
+        <div class="title-row"><span></span><h2>البحوث والدراسات</h2><span></span></div>
+        <p class="section-intro">إصدارات ودراسات وتقارير المركز في مجالات السلام والتنمية والمجتمعات المحلية.</p>
+        <div class="research-grid" id="researchGrid">
+          <article class="research-card"><div class="research-icon">▤</div><div><span class="research-tag">دراسة وبحث</span><h3>البحوث والدراسات العلمية</h3><p>يعمل المركز على إنتاج المعرفة والبحوث التي تدعم قضايا السلام والتنمية المستدامة في السودان.</p><a href="#contact">تفاصيل البحث ←</a></div></article>
+          <article class="research-card"><div class="research-icon">◫</div><div><span class="research-tag">تقارير</span><h3>تقارير ودراسات ميدانية</h3><p>تقارير ودراسات تساعد على فهم التحديات والفرص في غرب كردفان والمجتمعات المحلية.</p><a href="#contact">تفاصيل التقرير ←</a></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="programs" class="programs section">
+      <div class="container">
+        <div class="title-row"><span></span><h2>مجالات عمل المركز</h2><span></span></div>
+        <div class="program-grid">
+          <article><div class="num">01</div><h3>السلام وفض النزاعات</h3><p>دراسات وبرامج لبناء السلام والتعايش وحل النزاعات بالوسائل العلمية والمجتمعية.</p></article>
+          <article><div class="num">02</div><h3>التنمية والمجتمعات المحلية</h3><p>دعم المبادرات التي تعزز التنمية المستدامة وتخدم المجتمعات في غرب كردفان.</p></article>
+          <article><div class="num">03</div><h3>التدريب وبناء القدرات</h3><p>دورات وورش عمل للطلاب والباحثين والكوادر العاملة في مجالات المركز.</p></article>
+          <article><div class="num">04</div><h3>البحوث والشراكات</h3><p>إنتاج المعرفة وتطوير التعاون العلمي مع المؤسسات الأكاديمية والمجتمعية.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="news" class="news section">
+      <div class="container">
+        <div class="news-head"><div><span class="section-kicker">المستجدات</span><h2>أحدث الأخبار والبحوث</h2></div><a href="#news">عرض الكل ←</a></div>
+        <div class="news-grid">
+          <article class="news-card"><div class="news-img books"></div><small>برامج تدريبية</small><time>2025-09-05</time><h3>إطلاق برنامج تدريبي للباحثين الشباب بالجامعة</h3><a href="#contact">اقرأ المزيد ←</a></article>
+          <article class="news-card"><div class="news-img mountain"></div><small>تقارير</small><time>2025-09-10</time><h3>ورقة بحثية: بناء السلام في المجتمعات المحلية</h3><a href="#contact">اقرأ المزيد ←</a></article>
+          <article class="news-card"><div class="news-img plant"></div><small>أبحاث</small><time>2025-09-15</time><h3>دراسة حول فرص التنمية الزراعية المستدامة في الولاية</h3><a href="#contact">اقرأ المزيد ←</a></article>
+          <article class="news-card"><div class="news-img meeting"></div><small>أخبار</small><time>2025-09-22</time><h3>ورشة عمل حول تعزيز السلام المجتمعي في غرب كردفان</h3><a href="#contact">اقرأ المزيد ←</a></article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+    <section id="contact" class="contact-section section">
+      <div class="container contact-grid">
+        <div class="contact-copy">
+          <span class="section-kicker">تواصل معنا</span>
+          <h2>يسعدنا التواصل معكم</h2>
+          <p>للاستفسارات والشراكات والبرامج والبحوث، يمكنكم التواصل مع مركز دراسات السلام والتنمية بجامعة السلام.</p>
+          <div class="contact-items">
+            <div><b>📍 الموقع</b><span>جامعة السلام – ولاية غرب كردفان</span></div>
+            <div><b>☎ الهاتف</b><span>+249 121 145 757</span></div>
+            <div><b>✉ البريد الإلكتروني</b><span>info@alsalam.edu.sd</span></div>
+          </div>
+        </div>
+        <form class="contact-form" onsubmit="return false">
+          <h3>أرسل رسالة</h3>
+          <input type="text" placeholder="الاسم الكامل">
+          <input type="email" placeholder="البريد الإلكتروني">
+          <textarea rows="4" placeholder="اكتب رسالتك هنا"></textarea>
+          <button type="button" class="gold-btn">إرسال الرسالة ←</button>
+        </form>
+      </div>
+    </section>
+
+  <footer>
+    <div class="container footer-main">
+      <div class="footer-brand"><span class="logo">✦</span><div><strong>مركز دراسات السلام والتنمية</strong><small>جامعة السلام – ولاية غرب كردفان</small></div></div>
+      <div class="footer-slogan">معًا من أجل<br><strong>سلام مستدام وتنمية شاملة</strong></div>
+      <div class="contact"><span>📍 جامعة السلام – ولاية غرب كردفان</span><span>☎ +249 121 145 757</span><span>✉ info@alsalam.edu.sd</span></div>
+    </div>
+    <div class="container footer-bottom"><span>© <span id="year"></span> مركز دراسات السلام والتنمية – جامعة السلام</span><div><a href="#home">الرئيسية</a><a href="#about">عن المركز</a><a href="#programs">البرامج</a><a href="#news">الأخبار</a><a href="#contact">تواصل معنا</a></div><div class="social">f &nbsp; 𝕏 &nbsp; ▶ &nbsp; in</div></div>
+  </footer>
+  <script src="app.js"></script>
+</body>
+</html>

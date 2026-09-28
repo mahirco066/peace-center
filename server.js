@@ -10,89 +10,18 @@ const app = express();
 const PORT = process.env.PORT || 10000;
 const ROOT = __dirname;
 
-/* =========================================================
-   تحديد مجلد الموقع
-========================================================= */
-
-function findPublicDir() {
-  const candidates = [
-    path.join(ROOT, 'public'),
-    path.join(ROOT, 'peace-center', 'public'),
-    path.join(ROOT, 'website', 'public'),
-    ROOT
-  ];
-
-  for (const dir of candidates) {
-    if (fs.existsSync(path.join(dir, 'index.html'))) {
-      return dir;
-    }
-  }
-
-  function scan(dir, depth) {
-    if (depth < 0) return null;
-
-    if (fs.existsSync(path.join(dir, 'index.html'))) {
-      return dir;
-    }
-
-    let entries = [];
-
-    try {
-      entries = fs.readdirSync(dir, {
-        withFileTypes: true
-      });
-    } catch (error) {
-      return null;
-    }
-
-    for (const entry of entries) {
-      if (!entry.isDirectory()) continue;
-
-      if (
-        ['node_modules', '.git', '.cache'].includes(
-          entry.name
-        )
-      ) {
-        continue;
-      }
-
-      const found = scan(
-        path.join(dir, entry.name),
-        depth - 1
-      );
-
-      if (found) return found;
-    }
-
-    return null;
-  }
-
-  return scan(ROOT, 3) || path.join(ROOT, 'public');
-}
-
-const PUBLIC = findPublicDir();
-
-console.log('Website files directory:', PUBLIC);
-
-/* =========================================================
-   إعداد البيانات
-========================================================= */
-
+const PUBLIC_DIR = path.join(ROOT, 'public');
 const DATA_DIR = path.join(ROOT, 'data');
 const DB_FILE = path.join(DATA_DIR, 'db.json');
-
-fs.mkdirSync(DATA_DIR, {
-  recursive: true
-});
-
 const UPLOAD_DIR = path.join(ROOT, 'uploads');
 
-fs.mkdirSync(UPLOAD_DIR, {
-  recursive: true
-});
+fs.mkdirSync(DATA_DIR, { recursive: true });
+fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
+console.log('Website files directory:', PUBLIC_DIR);
 
 /* =========================================================
-   Supabase
+   SUPABASE
 ========================================================= */
 
 const SUPABASE_URL =
@@ -101,12 +30,13 @@ const SUPABASE_URL =
 const SUPABASE_SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
-const USE_SUPABASE = Boolean(
-  SUPABASE_URL &&
-  SUPABASE_SERVICE_ROLE_KEY
-);
+const USE_SUPABASE =
+  Boolean(
+    SUPABASE_URL &&
+    SUPABASE_SERVICE_ROLE_KEY
+  );
 
-const BUCKET =
+const STORAGE_BUCKET =
   process.env.SUPABASE_STORAGE_BUCKET ||
   'peace-files';
 
@@ -127,7 +57,7 @@ const supabase = USE_SUPABASE
    البيانات الأولية
 ========================================================= */
 
-const initial = {
+const initialData = {
   settings: {
     siteTitle:
       'مركز دراسات السلام والتنمية',
@@ -160,10 +90,31 @@ const initial = {
       'center.jpg',
 
     cms: {
+      homepage: {
+        kicker:
+          'مركز دراسات السلام والتنمية',
+
+        title:
+          'المعرفة والبحث العلمي من أجل السلام والتنمية المستدامة في السودان',
+
+        description:
+          'منصة أكاديمية للبحث والحوار وبناء القدرات، ودعم المبادرات التي تسهم في مجتمعات أكثر سلامًا وتماسكًا وتنمية.',
+
+        buttonText:
+          'اكتشف المزيد ←',
+
+        buttonLink:
+          '#about',
+
+        tagline:
+          'معًا من أجل سلام وتنمية مستدامة'
+      },
+
       services: [
         {
           id: 's1',
-          title: 'البحوث والدراسات',
+          title:
+            'البحوث والدراسات',
           text:
             'إنتاج المعرفة وإجراء البحوث العلمية التي تسهم في قضايا السلام والتنمية',
           icon: '🔬',
@@ -173,9 +124,11 @@ const initial = {
           order: 1,
           visible: true
         },
+
         {
           id: 's2',
-          title: 'بناء السلام',
+          title:
+            'بناء السلام',
           text:
             'تعزيز ثقافة السلام والتعايش والحوار المجتمعي',
           icon: '🕊️',
@@ -185,9 +138,11 @@ const initial = {
           order: 2,
           visible: true
         },
+
         {
           id: 's3',
-          title: 'التنمية المستدامة',
+          title:
+            'التنمية المستدامة',
           text:
             'دعم مبادرات التنمية والمشروعات المجتمعية المستدامة',
           icon: '🌱',
@@ -197,9 +152,11 @@ const initial = {
           order: 3,
           visible: true
         },
+
         {
           id: 's4',
-          title: 'التدريب وبناء القدرات',
+          title:
+            'التدريب وبناء القدرات',
           text:
             'تأهيل الكوادر وتطوير المهارات لخدمة المجتمع والتنمية',
           icon: '🎓',
@@ -220,6 +177,7 @@ const initial = {
           order: 1,
           visible: true
         },
+
         {
           id: 'st2',
           number: '15+',
@@ -228,6 +186,7 @@ const initial = {
           order: 2,
           visible: true
         },
+
         {
           id: 'st3',
           number: '50+',
@@ -236,6 +195,7 @@ const initial = {
           order: 3,
           visible: true
         },
+
         {
           id: 'st4',
           number: '100+',
@@ -246,30 +206,7 @@ const initial = {
         }
       ],
 
-      research: [
-        {
-          id: 'r1',
-          title:
-            'دراسات السلام والتنمية في غرب كردفان',
-          text:
-            'دراسات وبحوث علمية تتناول قضايا السلام والتنمية والمجتمع المحلي.',
-          image: '',
-          file: '',
-          order: 1,
-          visible: true
-        },
-        {
-          id: 'r2',
-          title:
-            'البحث العلمي وخدمة المجتمع',
-          text:
-            'إنتاج المعرفة وربط البحث العلمي باحتياجات المجتمع والتنمية.',
-          image: '',
-          file: '',
-          order: 2,
-          visible: true
-        }
-      ],
+      research: [],
 
       media: [],
 
@@ -283,6 +220,7 @@ const initial = {
           order: 1,
           visible: true
         },
+
         {
           id: 'nav2',
           title: 'عن المركز',
@@ -290,6 +228,7 @@ const initial = {
           order: 2,
           visible: true
         },
+
         {
           id: 'nav3',
           title: 'البحوث والدراسات',
@@ -297,6 +236,7 @@ const initial = {
           order: 3,
           visible: true
         },
+
         {
           id: 'nav4',
           title: 'البرامج',
@@ -304,6 +244,7 @@ const initial = {
           order: 4,
           visible: true
         },
+
         {
           id: 'nav5',
           title: 'الأخبار',
@@ -311,6 +252,7 @@ const initial = {
           order: 5,
           visible: true
         },
+
         {
           id: 'nav6',
           title: 'اتصل بنا',
@@ -318,27 +260,7 @@ const initial = {
           order: 6,
           visible: true
         }
-      ],
-
-      homepage: {
-        kicker:
-          'مركز دراسات السلام والتنمية',
-
-        title:
-          'المعرفة والبحث العلمي من أجل السلام والتنمية المستدامة في السودان',
-
-        description:
-          'منصة أكاديمية للبحث والحوار وبناء القدرات، ودعم المبادرات التي تسهم في مجتمعات أكثر سلامًا وتماسكًا وتنمية.',
-
-        buttonText:
-          'اكتشف المزيد ←',
-
-        buttonLink:
-          '#about',
-
-        tagline:
-          'معًا من أجل سلام وتنمية مستدامة'
-      }
+      ]
     }
   },
 
@@ -348,65 +270,49 @@ const initial = {
       text:
         '📢 مركز دراسات السلام والتنمية يعلن عن بدء التسجيل في البرامج التدريبية'
     },
+
     {
       id: 'a2',
       text:
         'ندوة علمية: السلام والتنمية المستدامة في غرب كردفان'
-    },
-    {
-      id: 'a3',
-      text:
-        'تابع أحدث البحوث والدراسات والأنشطة العلمية للمركز'
     }
   ],
 
   programs: [
     {
       id: 'p1',
-      title: 'بناء السلام',
+      title:
+        'البحث العلمي والدراسات',
       text:
-        'تعزيز ثقافة السلام والتعايش والحوار المجتمعي'
+        'إنتاج المعرفة وإجراء البحوث العلمية التي تسهم في قضايا السلام والتنمية'
     },
+
     {
       id: 'p2',
-      title: 'التنمية المستدامة',
-      text:
-        'دعم مبادرات التنمية والمشروعات المجتمعية المستدامة'
-    },
-    {
-      id: 'p3',
-      title: 'التدريب وبناء القدرات',
+      title:
+        'البرامج والتدريب',
       text:
         'تأهيل الكوادر وتطوير المهارات لخدمة المجتمع والتنمية'
     },
+
+    {
+      id: 'p3',
+      title:
+        'الرصد والإعلام',
+      text:
+        'دعم المعرفة والتواصل حول قضايا السلام والتنمية'
+    },
+
     {
       id: 'p4',
-      title: 'البحوث والدراسات',
+      title:
+        'الشراكات والتعاون',
       text:
-        'إنتاج المعرفة وإجراء البحوث العلمية التي تسهم في قضايا السلام والتنمية'
+        'تطوير التعاون مع المؤسسات الأكاديمية والمجتمعية'
     }
   ],
 
-  news: [
-    {
-      id: 'n1',
-      title:
-        'ندوة علمية حول السلام والتنمية المستدامة',
-      text:
-        'فعالية علمية تجمع الباحثين والمهتمين بقضايا السلام والتنمية.',
-      date: '2026-09-20',
-      image: ''
-    },
-    {
-      id: 'n2',
-      title:
-        'برنامج تدريبي لبناء القدرات',
-      text:
-        'برنامج تدريبي يستهدف تطوير مهارات الكوادر والمبادرات المحلية.',
-      date: '2026-09-15',
-      image: ''
-    }
-  ],
+  news: [],
 
   documents: [],
 
@@ -418,20 +324,9 @@ const initial = {
       caption:
         'شجرة التبلدي في غرب كردفان',
       source:
-        'Wikimedia Commons · CC BY-SA 4.0',
+        'Wikimedia Commons',
       url:
         'https://commons.wikimedia.org/wiki/File:Baobab_vibes_01.jpg'
-    },
-    {
-      id: 'h2',
-      image:
-        'https://upload.wikimedia.org/wikipedia/commons/6/60/%D8%AE%D8%B1%D9%81%D8%A7%D9%86_%D9%81%D9%8A_%D9%85%D9%86%D8%B7%D9%82%D8%A9_%D8%A7%D9%84%D8%AE%D9%88%D9%8A.jpg',
-      caption:
-        'قطيع الخرفان في منطقة الخوي بغرب كردفان',
-      source:
-        'Wikimedia Commons · CC BY-SA 4.0',
-      url:
-        'https://commons.wikimedia.org/wiki/File:%D8%AE%D8%B1%D9%81%D8%A7%D9%86_%D9%81%D9%8A_%D9%85%D9%86%D8%B7%D9%82%D8%A9_%D8%A7%D9%84%D8%AE%D9%88%D9%8A.jpg'
     }
   ]
 };
@@ -440,9 +335,9 @@ const initial = {
    أدوات عامة
 ========================================================= */
 
-function cloneInitial() {
+function cloneData(data) {
   return JSON.parse(
-    JSON.stringify(initial)
+    JSON.stringify(data)
   );
 }
 
@@ -451,18 +346,27 @@ function createId() {
 }
 
 /* =========================================================
-   تشفير كلمة المرور
+   كلمة المرور
 ========================================================= */
 
 function hashPassword(
   password,
   salt = crypto.randomBytes(16).toString('hex')
 ) {
-  const hash = crypto
-    .scryptSync(password, salt, 64)
-    .toString('hex');
+  const hash =
+    crypto
+      .scryptSync(
+        password,
+        salt,
+        64
+      )
+      .toString('hex');
 
-  return salt + ':' + hash;
+  return (
+    salt +
+    ':' +
+    hash
+  );
 }
 
 function verifyPassword(
@@ -470,28 +374,40 @@ function verifyPassword(
   stored
 ) {
   const parts =
-    String(stored || '').split(':');
+    String(
+      stored || ''
+    ).split(':');
 
-  const salt = parts[0];
-  const key = parts[1];
-
-  if (!salt || !key) {
+  if (parts.length !== 2) {
     return false;
   }
 
-  const derived = crypto
-    .scryptSync(password, salt, 64)
-    .toString('hex');
+  const salt =
+    parts[0];
 
-  const a = Buffer.from(
-    key,
-    'hex'
-  );
+  const savedHash =
+    parts[1];
 
-  const b = Buffer.from(
-    derived,
-    'hex'
-  );
+  const derivedHash =
+    crypto
+      .scryptSync(
+        password,
+        salt,
+        64
+      )
+      .toString('hex');
+
+  const a =
+    Buffer.from(
+      savedHash,
+      'hex'
+    );
+
+  const b =
+    Buffer.from(
+      derivedHash,
+      'hex'
+    );
 
   if (a.length !== b.length) {
     return false;
@@ -504,7 +420,7 @@ function verifyPassword(
 }
 
 /* =========================================================
-   توحيد بيانات CMS
+   التأكد من وجود أقسام CMS
 ========================================================= */
 
 function ensureCms(db) {
@@ -516,7 +432,12 @@ function ensureCms(db) {
     db.settings.cms = {};
   }
 
-  const cms = db.settings.cms;
+  const cms =
+    db.settings.cms;
+
+  if (!cms.homepage) {
+    cms.homepage = {};
+  }
 
   if (!Array.isArray(cms.services)) {
     cms.services = [];
@@ -542,10 +463,6 @@ function ensureCms(db) {
     cms.navigation = [];
   }
 
-  if (!cms.homepage) {
-    cms.homepage = {};
-  }
-
   return db;
 }
 
@@ -553,9 +470,16 @@ function ensureCms(db) {
    قاعدة البيانات المحلية
 ========================================================= */
 
-function loadLocal() {
-  if (!fs.existsSync(DB_FILE)) {
-    const db = cloneInitial();
+function loadLocalData() {
+  if (
+    !fs.existsSync(
+      DB_FILE
+    )
+  ) {
+    const db =
+      cloneData(
+        initialData
+      );
 
     db.admin = {
       username:
@@ -571,9 +495,15 @@ function loadLocal() {
 
     fs.writeFileSync(
       DB_FILE,
-      JSON.stringify(db, null, 2),
+      JSON.stringify(
+        db,
+        null,
+        2
+      ),
       'utf8'
     );
+
+    return db;
   }
 
   const db =
@@ -586,10 +516,26 @@ function loadLocal() {
 
   ensureCms(db);
 
+  if (!db.admin) {
+    db.admin = {
+      username:
+        process.env.ADMIN_USERNAME ||
+        'admin',
+
+      passwordHash:
+        hashPassword(
+          process.env.ADMIN_PASSWORD ||
+          'Peace@2026'
+        )
+    };
+
+    saveLocalData(db);
+  }
+
   return db;
 }
 
-function saveLocal(db) {
+function saveLocalData(db) {
   ensureCms(db);
 
   fs.writeFileSync(
@@ -604,7 +550,7 @@ function saveLocal(db) {
 }
 
 /* =========================================================
-   قاعدة بيانات Supabase
+   Supabase
 ========================================================= */
 
 async function getSupabaseData() {
@@ -621,50 +567,54 @@ async function getSupabaseData() {
 
   if (!result.data) {
     const seed =
-      cloneInitial();
+      cloneData(
+        initialData
+      );
 
-    const insertResult =
+    const inserted =
       await supabase
         .from('site_data')
         .insert({
           id: 1,
+
           settings:
             seed.settings,
+
           announcements:
             seed.announcements,
+
           programs:
             seed.programs,
+
           news:
             seed.news,
+
           documents:
             seed.documents,
+
           hero:
             seed.hero
         })
         .select()
         .single();
 
-    if (insertResult.error) {
-      throw insertResult.error;
+    if (inserted.error) {
+      throw inserted.error;
     }
 
-    const db =
-      insertResult.data;
-
-    ensureCms(db);
-
-    return db;
+    return ensureCms(
+      inserted.data
+    );
   }
 
-  const db =
-    result.data;
-
-  ensureCms(db);
-
-  return db;
+  return ensureCms(
+    result.data
+  );
 }
 
-async function saveSupabaseData(db) {
+async function saveSupabaseData(
+  db
+) {
   ensureCms(db);
 
   const result =
@@ -675,21 +625,29 @@ async function saveSupabaseData(db) {
           db.settings,
 
         announcements:
-          db.announcements || [],
+          db.announcements ||
+          [],
 
         programs:
-          db.programs || [],
+          db.programs ||
+          [],
 
         news:
-          db.news || [],
+          db.news ||
+          [],
 
         documents:
-          db.documents || [],
+          db.documents ||
+          [],
 
         hero:
-          db.hero || []
+          db.hero ||
+          []
       })
-      .eq('id', 1);
+      .eq(
+        'id',
+        1
+      );
 
   if (result.error) {
     throw result.error;
@@ -703,15 +661,17 @@ async function getData() {
     return getSupabaseData();
   }
 
-  return loadLocal();
+  return loadLocalData();
 }
 
 async function saveData(db) {
   if (USE_SUPABASE) {
-    return saveSupabaseData(db);
+    return saveSupabaseData(
+      db
+    );
   }
 
-  saveLocal(db);
+  saveLocalData(db);
 
   return db;
 }
@@ -734,32 +694,52 @@ app.use(
 );
 
 /* =========================================================
-   الجلسات
+   جلسات الإدارة
 ========================================================= */
 
-const sessions = new Map();
+const sessions =
+  new Map();
 
-function createSession(username) {
+function createSession(
+  username
+) {
   const token =
-    crypto.randomBytes(32).toString('hex');
+    crypto.randomBytes(
+      32
+    ).toString('hex');
 
-  sessions.set(token, {
-    username,
-    createdAt: Date.now()
-  });
+  sessions.set(
+    token,
+    {
+      username,
+      createdAt:
+        Date.now()
+    }
+  );
 
   return token;
 }
 
-function getTokenFromRequest(req) {
-  const header =
-    req.headers.authorization || '';
+function getToken(req) {
+  const authorization =
+    req.headers.authorization ||
+    '';
 
-  if (header.startsWith('Bearer ')) {
-    return header.slice(7);
+  if (
+    authorization.startsWith(
+      'Bearer '
+    )
+  ) {
+    return authorization.slice(
+      7
+    );
   }
 
-  return req.headers['x-admin-token'] || '';
+  return (
+    req.headers[
+      'x-admin-token'
+    ] || ''
+  );
 }
 
 function requireAdmin(
@@ -768,12 +748,16 @@ function requireAdmin(
   next
 ) {
   const token =
-    getTokenFromRequest(req);
+    getToken(req);
 
-  if (!token || !sessions.has(token)) {
+  if (
+    !token ||
+    !sessions.has(token)
+  ) {
     return res.status(401).json({
       ok: false,
-      error: 'غير مصرح'
+      error:
+        'غير مصرح'
     });
   }
 
@@ -787,164 +771,115 @@ function requireAdmin(
    تسجيل الدخول
 ========================================================= */
 
-app.post(
-  '/api/login',
-  async (req, res) => {
-    try {
-      const username =
-        String(
-          req.body.username || ''
-        ).trim();
-
-      const password =
-        String(
-          req.body.password || ''
-        );
-
-      if (!username || !password) {
-        return res.status(400).json({
-          ok: false,
-          error:
-            'يرجى إدخال اسم المستخدم وكلمة المرور'
-        });
-      }
-
-      const db =
-        await getData();
-
-      const savedUsername =
-        process.env.ADMIN_USERNAME ||
-        (db.admin &&
-          db.admin.username) ||
-        'admin';
-
-      const savedPassword =
-        process.env.ADMIN_PASSWORD || '';
-
-      let valid = false;
-
-      if (savedPassword) {
-        valid =
-          username === savedUsername &&
-          password === savedPassword;
-      } else {
-        if (
-          db.admin &&
-          db.admin.passwordHash
-        ) {
-          valid =
-            username === savedUsername &&
-            verifyPassword(
-              password,
-              db.admin.passwordHash
-            );
-        } else {
-          valid =
-            username === 'admin' &&
-            password === 'Peace@2026';
-        }
-      }
-
-      if (!valid) {
-        return res.status(401).json({
-          ok: false,
-          error:
-            'اسم المستخدم أو كلمة المرور غير صحيحة'
-        });
-      }
-
-      const token =
-        createSession(username);
-
-      return res.json({
-        ok: true,
-        token,
-        username
-      });
-    } catch (error) {
-      console.error(
-        'Login error:',
-        error
-      );
-
-      return res.status(500).json({
-        ok: false,
-        error:
-          'حدث خطأ أثناء تسجيل الدخول'
-      });
-    }
-  }
-);
-
-/* Alias */
-
-app.post(
-  '/api/admin/login',
-  async (req, res) => {
-    req.url = '/api/login';
-
+async function loginHandler(
+  req,
+  res
+) {
+  try {
     const username =
       String(
-        req.body.username || ''
+        req.body.username ||
+        ''
       ).trim();
 
     const password =
       String(
-        req.body.password || ''
+        req.body.password ||
+        ''
       );
 
-    try {
-      const db =
-        await getData();
-
-      const savedUsername =
-        process.env.ADMIN_USERNAME ||
-        (db.admin &&
-          db.admin.username) ||
-        'admin';
-
-      let valid = false;
-
-      if (process.env.ADMIN_PASSWORD) {
-        valid =
-          username === savedUsername &&
-          password ===
-            process.env.ADMIN_PASSWORD;
-      } else {
-        valid =
-          username === savedUsername &&
-          verifyPassword(
-            password,
-            db.admin.passwordHash
-          );
-      }
-
-      if (!valid) {
-        return res.status(401).json({
-          ok: false,
-          error:
-            'اسم المستخدم أو كلمة المرور غير صحيحة'
-        });
-      }
-
-      const token =
-        createSession(username);
-
-      return res.json({
-        ok: true,
-        token,
-        username
-      });
-    } catch (error) {
-      console.error(error);
-
-      return res.status(500).json({
+    if (
+      !username ||
+      !password
+    ) {
+      return res.status(400).json({
         ok: false,
         error:
-          'حدث خطأ أثناء تسجيل الدخول'
+          'يرجى إدخال اسم المستخدم وكلمة المرور'
       });
     }
+
+    const db =
+      await getData();
+
+    const savedUsername =
+      process.env.ADMIN_USERNAME ||
+      (
+        db.admin &&
+        db.admin.username
+      ) ||
+      'admin';
+
+    let valid =
+      false;
+
+    if (
+      process.env.ADMIN_PASSWORD
+    ) {
+      valid =
+        username ===
+          savedUsername &&
+        password ===
+          process.env.ADMIN_PASSWORD;
+    } else if (
+      db.admin &&
+      db.admin.passwordHash
+    ) {
+      valid =
+        username ===
+          savedUsername &&
+        verifyPassword(
+          password,
+          db.admin.passwordHash
+        );
+    } else {
+      valid =
+        username ===
+          'admin' &&
+        password ===
+          'Peace@2026';
+    }
+
+    if (!valid) {
+      return res.status(401).json({
+        ok: false,
+        error:
+          'اسم المستخدم أو كلمة المرور غير صحيحة'
+      });
+    }
+
+    const token =
+      createSession(
+        username
+      );
+
+    res.json({
+      ok: true,
+      token,
+      username
+    });
+  } catch (error) {
+    console.error(
+      'Login error:',
+      error
+    );
+
+    res.status(500).json({
+      ok: false,
+      error:
+        'حدث خطأ أثناء تسجيل الدخول'
+    });
   }
+}
+
+app.post(
+  '/api/login',
+  loginHandler
+);
+
+app.post(
+  '/api/admin/login',
+  loginHandler
 );
 
 /* =========================================================
@@ -955,10 +890,9 @@ app.post(
   '/api/logout',
   requireAdmin,
   (req, res) => {
-    const token =
-      getTokenFromRequest(req);
-
-    sessions.delete(token);
+    sessions.delete(
+      getToken(req)
+    );
 
     res.json({
       ok: true
@@ -967,7 +901,7 @@ app.post(
 );
 
 /* =========================================================
-   بيانات الموقع العامة
+   البيانات العامة
 ========================================================= */
 
 app.get(
@@ -979,23 +913,30 @@ app.get(
 
       res.json({
         ok: true,
+
         settings:
-          db.settings || {},
+          db.settings ||
+          {},
 
         announcements:
-          db.announcements || [],
+          db.announcements ||
+          [],
 
         programs:
-          db.programs || [],
+          db.programs ||
+          [],
 
         news:
-          db.news || [],
+          db.news ||
+          [],
 
         documents:
-          db.documents || [],
+          db.documents ||
+          [],
 
         hero:
-          db.hero || []
+          db.hero ||
+          []
       });
     } catch (error) {
       console.error(
@@ -1013,7 +954,7 @@ app.get(
 );
 
 /* =========================================================
-   لوحة التحكم
+   بيانات لوحة التحكم
 ========================================================= */
 
 app.get(
@@ -1044,7 +985,7 @@ app.get(
 );
 
 /* =========================================================
-   الإعدادات العامة
+   الإعدادات
 ========================================================= */
 
 app.get(
@@ -1057,7 +998,8 @@ app.get(
     res.json({
       ok: true,
       data:
-        db.settings || {}
+        db.settings ||
+        {}
     });
   }
 );
@@ -1081,7 +1023,8 @@ app.put(
 
       res.json({
         ok: true,
-        data: db.settings
+        data:
+          db.settings
       });
     } catch (error) {
       console.error(error);
@@ -1105,6 +1048,8 @@ app.get(
   async (req, res) => {
     const db =
       await getData();
+
+    ensureCms(db);
 
     res.json({
       ok: true,
@@ -1149,1375 +1094,454 @@ app.put(
 );
 
 /* =========================================================
-   أدوات CRUD
+   CRUD لأقسام CMS الجديدة
 ========================================================= */
 
-function sortItems(items) {
-  return [...items].sort(
+const cmsCollections = [
+  'services',
+  'stats',
+  'research',
+  'media',
+  'pages',
+  'navigation'
+];
+
+function sortItems(
+  items
+) {
+  return [
+    ...items
+  ].sort(
     (a, b) =>
-      Number(a.order || 0) -
-      Number(b.order || 0)
+      Number(
+        a.order || 0
+      ) -
+      Number(
+        b.order || 0
+      )
   );
 }
 
-async function listCmsCollection(
-  collection
+for (
+  const collection
+  of cmsCollections
 ) {
-  const db =
-    await getData();
+  const base =
+    `/api/admin/${collection}`;
 
-  ensureCms(db);
+  app.get(
+    base,
+    requireAdmin,
+    async (req, res) => {
+      try {
+        const db =
+          await getData();
 
-  return sortItems(
-    db.settings.cms[collection] || []
+        ensureCms(db);
+
+        res.json({
+          ok: true,
+          data:
+            sortItems(
+              db.settings.cms[
+                collection
+              ]
+            )
+        });
+      } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+          ok: false,
+          error:
+            'تعذر تحميل البيانات'
+        });
+      }
+    }
+  );
+
+  app.post(
+    base,
+    requireAdmin,
+    async (req, res) => {
+      try {
+        const db =
+          await getData();
+
+        ensureCms(db);
+
+        const items =
+          db.settings.cms[
+            collection
+          ];
+
+        const item = {
+          ...(req.body || {}),
+
+          id:
+            req.body &&
+            req.body.id
+              ? req.body.id
+              : createId(),
+
+          order:
+            req.body &&
+            req.body.order !==
+              undefined
+              ? req.body.order
+              : items.length + 1
+        };
+
+        items.push(item);
+
+        await saveData(db);
+
+        res.json({
+          ok: true,
+          data: item
+        });
+      } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+          ok: false,
+          error:
+            'تعذر إضافة العنصر'
+        });
+      }
+    }
+  );
+
+  app.put(
+    `${base}/:id`,
+    requireAdmin,
+    async (req, res) => {
+      try {
+        const db =
+          await getData();
+
+        ensureCms(db);
+
+        const items =
+          db.settings.cms[
+            collection
+          ];
+
+        const index =
+          items.findIndex(
+            item =>
+              String(
+                item.id
+              ) ===
+              String(
+                req.params.id
+              )
+          );
+
+        if (
+          index === -1
+        ) {
+          return res.status(404).json({
+            ok: false,
+            error:
+              'العنصر غير موجود'
+          });
+        }
+
+        items[index] = {
+          ...items[index],
+          ...(req.body || {}),
+          id:
+            items[index].id
+        };
+
+        await saveData(db);
+
+        res.json({
+          ok: true,
+          data:
+            items[index]
+        });
+      } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+          ok: false,
+          error:
+            'تعذر تعديل العنصر'
+        });
+      }
+    }
+  );
+
+  app.delete(
+    `${base}/:id`,
+    requireAdmin,
+    async (req, res) => {
+      try {
+        const db =
+          await getData();
+
+        ensureCms(db);
+
+        const items =
+          db.settings.cms[
+            collection
+          ];
+
+        const index =
+          items.findIndex(
+            item =>
+              String(
+                item.id
+              ) ===
+              String(
+                req.params.id
+              )
+          );
+
+        if (
+          index === -1
+        ) {
+          return res.status(404).json({
+            ok: false,
+            error:
+              'العنصر غير موجود'
+          });
+        }
+
+        items.splice(
+          index,
+          1
+        );
+
+        await saveData(db);
+
+        res.json({
+          ok: true
+        });
+      } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+          ok: false,
+          error:
+            'تعذر حذف العنصر'
+        });
+      }
+    }
   );
 }
 
-async function createCmsItem(
-  collection,
-  item
+/* =========================================================
+   الأقسام القديمة:
+   announcements / programs / news / documents / hero
+========================================================= */
+
+const legacyCollections = [
+  'announcements',
+  'programs',
+  'news',
+  'documents',
+  'hero'
+];
+
+for (
+  const collection
+  of legacyCollections
 ) {
-  const db =
-    await getData();
+  const base =
+    `/api/admin/${collection}`;
 
-  ensureCms(db);
+  app.get(
+    base,
+    requireAdmin,
+    async (req, res) => {
+      try {
+        const db =
+          await getData();
 
-  const items =
-    db.settings.cms[collection];
+        res.json({
+          ok: true,
+          data:
+            db[collection] ||
+            []
+        });
+      } catch (error) {
+        console.error(error);
 
-  const newItem = {
-    ...item,
-    id:
-      item.id ||
-      createId()
-  };
+        res.status(500).json({
+          ok: false,
+          error:
+            'تعذر تحميل البيانات'
+        });
+      }
+    }
+  );
 
-  if (
-    newItem.order === undefined
-  ) {
-    newItem.order =
-      items.length + 1;
-  }
+  app.post(
+    base,
+    requireAdmin,
+    async (req, res) => {
+      try {
+        const db =
+          await getData();
 
-  items.push(newItem);
+        if (
+          !Array.isArray(
+            db[collection]
+          )
+        ) {
+          db[collection] =
+            [];
+        }
 
-  await saveData(db);
+        const item = {
+          ...(req.body || {}),
 
-  return newItem;
+          id:
+            req.body &&
+            req.body.id
+              ? req.body.id
+              : createId()
+        };
+
+        db[collection].push(
+          item
+        );
+
+        await saveData(db);
+
+        res.json({
+          ok: true,
+          data: item
+        });
+      } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+          ok: false,
+          error:
+            'تعذر إضافة العنصر'
+        });
+      }
+    }
+  );
+
+  app.put(
+    `${base}/:id`,
+    requireAdmin,
+    async (req, res) => {
+      try {
+        const db =
+          await getData();
+
+        const items =
+          db[collection] ||
+          [];
+
+        const index =
+          items.findIndex(
+            item =>
+              String(
+                item.id
+              ) ===
+              String(
+                req.params.id
+              )
+          );
+
+        if (
+          index === -1
+        ) {
+          return res.status(404).json({
+            ok: false,
+            error:
+              'العنصر غير موجود'
+          });
+        }
+
+        items[index] = {
+          ...items[index],
+          ...(req.body || {}),
+          id:
+            items[index].id
+        };
+
+        await saveData(db);
+
+        res.json({
+          ok: true,
+          data:
+            items[index]
+        });
+      } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+          ok: false,
+          error:
+            'تعذر تعديل العنصر'
+        });
+      }
+    }
+  );
+
+  app.delete(
+    `${base}/:id`,
+    requireAdmin,
+    async (req, res) => {
+      try {
+        const db =
+          await getData();
+
+        const items =
+          db[collection] ||
+          [];
+
+        const index =
+          items.findIndex(
+            item =>
+              String(
+                item.id
+              ) ===
+              String(
+                req.params.id
+              )
+          );
+
+        if (
+          index === -1
+        ) {
+          return res.status(404).json({
+            ok: false,
+            error:
+              'العنصر غير موجود'
+          });
+        }
+
+        items.splice(
+          index,
+          1
+        );
+
+        await saveData(db);
+
+        res.json({
+          ok: true
+        });
+      } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+          ok: false,
+          error:
+            'تعذر حذف العنصر'
+        });
+      }
+    }
+  );
 }
-
-async function updateCmsItem(
-  collection,
-  itemId,
-  changes
-) {
-  const db =
-    await getData();
-
-  ensureCms(db);
-
-  const items =
-    db.settings.cms[collection];
-
-  const index =
-    items.findIndex(
-      item =>
-        String(item.id) ===
-        String(itemId)
-    );
-
-  if (index === -1) {
-    return null;
-  }
-
-  items[index] = {
-    ...items[index],
-    ...(changes || {}),
-    id: items[index].id
-  };
-
-  await saveData(db);
-
-  return items[index];
-}
-
-async function deleteCmsItem(
-  collection,
-  itemId
-) {
-  const db =
-    await getData();
-
-  ensureCms(db);
-
-  const items =
-    db.settings.cms[collection];
-
-  const index =
-    items.findIndex(
-      item =>
-        String(item.id) ===
-        String(itemId)
-    );
-
-  if (index === -1) {
-    return false;
-  }
-
-  items.splice(index, 1);
-
-  await saveData(db);
-
-  return true;
-}
-
-/* =========================================================
-   Services
-========================================================= */
-
-app.get(
-  '/api/admin/services',
-  requireAdmin,
-  async (req, res) => {
-    res.json({
-      ok: true,
-      data:
-        await listCmsCollection(
-          'services'
-        )
-    });
-  }
-);
-
-app.post(
-  '/api/admin/services',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const item =
-        await createCmsItem(
-          'services',
-          req.body || {}
-        );
-
-      res.json({
-        ok: true,
-        data: item
-      });
-    } catch (error) {
-      console.error(error);
-
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر إضافة الخدمة'
-      });
-    }
-  }
-);
-
-app.put(
-  '/api/admin/services/:id',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const item =
-        await updateCmsItem(
-          'services',
-          req.params.id,
-          req.body || {}
-        );
-
-      if (!item) {
-        return res.status(404).json({
-          ok: false,
-          error:
-            'الخدمة غير موجودة'
-        });
-      }
-
-      res.json({
-        ok: true,
-        data: item
-      });
-    } catch (error) {
-      console.error(error);
-
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر تعديل الخدمة'
-      });
-    }
-  }
-);
-
-app.delete(
-  '/api/admin/services/:id',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const deleted =
-        await deleteCmsItem(
-          'services',
-          req.params.id
-        );
-
-      if (!deleted) {
-        return res.status(404).json({
-          ok: false,
-          error:
-            'الخدمة غير موجودة'
-        });
-      }
-
-      res.json({
-        ok: true
-      });
-    } catch (error) {
-      console.error(error);
-
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر حذف الخدمة'
-      });
-    }
-  }
-);
-
-/* =========================================================
-   Stats
-========================================================= */
-
-app.get(
-  '/api/admin/stats',
-  requireAdmin,
-  async (req, res) => {
-    res.json({
-      ok: true,
-      data:
-        await listCmsCollection(
-          'stats'
-        )
-    });
-  }
-);
-
-app.post(
-  '/api/admin/stats',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const item =
-        await createCmsItem(
-          'stats',
-          req.body || {}
-        );
-
-      res.json({
-        ok: true,
-        data: item
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر إضافة الإحصائية'
-      });
-    }
-  }
-);
-
-app.put(
-  '/api/admin/stats/:id',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const item =
-        await updateCmsItem(
-          'stats',
-          req.params.id,
-          req.body || {}
-        );
-
-      if (!item) {
-        return res.status(404).json({
-          ok: false,
-          error:
-            'الإحصائية غير موجودة'
-        });
-      }
-
-      res.json({
-        ok: true,
-        data: item
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر تعديل الإحصائية'
-      });
-    }
-  }
-);
-
-app.delete(
-  '/api/admin/stats/:id',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const deleted =
-        await deleteCmsItem(
-          'stats',
-          req.params.id
-        );
-
-      if (!deleted) {
-        return res.status(404).json({
-          ok: false,
-          error:
-            'الإحصائية غير موجودة'
-        });
-      }
-
-      res.json({
-        ok: true
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر حذف الإحصائية'
-      });
-    }
-  }
-);
-
-/* =========================================================
-   Research
-========================================================= */
-
-app.get(
-  '/api/admin/research',
-  requireAdmin,
-  async (req, res) => {
-    res.json({
-      ok: true,
-      data:
-        await listCmsCollection(
-          'research'
-        )
-    });
-  }
-);
-
-app.post(
-  '/api/admin/research',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const item =
-        await createCmsItem(
-          'research',
-          req.body || {}
-        );
-
-      res.json({
-        ok: true,
-        data: item
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر إضافة البحث'
-      });
-    }
-  }
-);
-
-app.put(
-  '/api/admin/research/:id',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const item =
-        await updateCmsItem(
-          'research',
-          req.params.id,
-          req.body || {}
-        );
-
-      if (!item) {
-        return res.status(404).json({
-          ok: false,
-          error:
-            'البحث غير موجود'
-        });
-      }
-
-      res.json({
-        ok: true,
-        data: item
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر تعديل البحث'
-      });
-    }
-  }
-);
-
-app.delete(
-  '/api/admin/research/:id',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const deleted =
-        await deleteCmsItem(
-          'research',
-          req.params.id
-        );
-
-      if (!deleted) {
-        return res.status(404).json({
-          ok: false,
-          error:
-            'البحث غير موجود'
-        });
-      }
-
-      res.json({
-        ok: true
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر حذف البحث'
-      });
-    }
-  }
-);
-
-/* =========================================================
-   Media
-========================================================= */
-
-app.get(
-  '/api/admin/media',
-  requireAdmin,
-  async (req, res) => {
-    res.json({
-      ok: true,
-      data:
-        await listCmsCollection(
-          'media'
-        )
-    });
-  }
-);
-
-app.post(
-  '/api/admin/media',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const item =
-        await createCmsItem(
-          'media',
-          req.body || {}
-        );
-
-      res.json({
-        ok: true,
-        data: item
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر إضافة ملف الوسائط'
-      });
-    }
-  }
-);
-
-app.put(
-  '/api/admin/media/:id',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const item =
-        await updateCmsItem(
-          'media',
-          req.params.id,
-          req.body || {}
-        );
-
-      if (!item) {
-        return res.status(404).json({
-          ok: false,
-          error:
-            'ملف الوسائط غير موجود'
-        });
-      }
-
-      res.json({
-        ok: true,
-        data: item
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر تعديل ملف الوسائط'
-      });
-    }
-  }
-);
-
-app.delete(
-  '/api/admin/media/:id',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const deleted =
-        await deleteCmsItem(
-          'media',
-          req.params.id
-        );
-
-      if (!deleted) {
-        return res.status(404).json({
-          ok: false,
-          error:
-            'ملف الوسائط غير موجود'
-        });
-      }
-
-      res.json({
-        ok: true
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر حذف ملف الوسائط'
-      });
-    }
-  }
-);
-
-/* =========================================================
-   Pages
-========================================================= */
-
-app.get(
-  '/api/admin/pages',
-  requireAdmin,
-  async (req, res) => {
-    res.json({
-      ok: true,
-      data:
-        await listCmsCollection(
-          'pages'
-        )
-    });
-  }
-);
-
-app.post(
-  '/api/admin/pages',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const item =
-        await createCmsItem(
-          'pages',
-          req.body || {}
-        );
-
-      res.json({
-        ok: true,
-        data: item
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر إضافة الصفحة'
-      });
-    }
-  }
-);
-
-app.put(
-  '/api/admin/pages/:id',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const item =
-        await updateCmsItem(
-          'pages',
-          req.params.id,
-          req.body || {}
-        );
-
-      if (!item) {
-        return res.status(404).json({
-          ok: false,
-          error:
-            'الصفحة غير موجودة'
-        });
-      }
-
-      res.json({
-        ok: true,
-        data: item
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر تعديل الصفحة'
-      });
-    }
-  }
-);
-
-app.delete(
-  '/api/admin/pages/:id',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const deleted =
-        await deleteCmsItem(
-          'pages',
-          req.params.id
-        );
-
-      if (!deleted) {
-        return res.status(404).json({
-          ok: false,
-          error:
-            'الصفحة غير موجودة'
-        });
-      }
-
-      res.json({
-        ok: true
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر حذف الصفحة'
-      });
-    }
-  }
-);
-
-/* =========================================================
-   Navigation
-========================================================= */
-
-app.get(
-  '/api/admin/navigation',
-  requireAdmin,
-  async (req, res) => {
-    res.json({
-      ok: true,
-      data:
-        await listCmsCollection(
-          'navigation'
-        )
-    });
-  }
-);
-
-app.post(
-  '/api/admin/navigation',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const item =
-        await createCmsItem(
-          'navigation',
-          req.body || {}
-        );
-
-      res.json({
-        ok: true,
-        data: item
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر إضافة عنصر القائمة'
-      });
-    }
-  }
-);
-
-app.put(
-  '/api/admin/navigation/:id',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const item =
-        await updateCmsItem(
-          'navigation',
-          req.params.id,
-          req.body || {}
-        );
-
-      if (!item) {
-        return res.status(404).json({
-          ok: false,
-          error:
-            'عنصر القائمة غير موجود'
-        });
-      }
-
-      res.json({
-        ok: true,
-        data: item
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر تعديل عنصر القائمة'
-      });
-    }
-  }
-);
-
-app.delete(
-  '/api/admin/navigation/:id',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const deleted =
-        await deleteCmsItem(
-          'navigation',
-          req.params.id
-        );
-
-      if (!deleted) {
-        return res.status(404).json({
-          ok: false,
-          error:
-            'عنصر القائمة غير موجود'
-        });
-      }
-
-      res.json({
-        ok: true
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر حذف عنصر القائمة'
-      });
-    }
-  }
-);
-
-/* =========================================================
-   الإعلانات
-========================================================= */
-
-app.get(
-  '/api/admin/announcements',
-  requireAdmin,
-  async (req, res) => {
-    const db =
-      await getData();
-
-    res.json({
-      ok: true,
-      data:
-        db.announcements || []
-    });
-  }
-);
-
-app.post(
-  '/api/admin/announcements',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const db =
-        await getData();
-
-      const item = {
-        id:
-          createId(),
-        ...(req.body || {})
-      };
-
-      if (
-        !Array.isArray(
-          db.announcements
-        )
-      ) {
-        db.announcements = [];
-      }
-
-      db.announcements.push(item);
-
-      await saveData(db);
-
-      res.json({
-        ok: true,
-        data: item
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر إضافة الإعلان'
-      });
-    }
-  }
-);
-
-app.put(
-  '/api/admin/announcements/:id',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const db =
-        await getData();
-
-      const items =
-        db.announcements || [];
-
-      const index =
-        items.findIndex(
-          item =>
-            String(item.id) ===
-            String(req.params.id)
-        );
-
-      if (index === -1) {
-        return res.status(404).json({
-          ok: false,
-          error:
-            'الإعلان غير موجود'
-        });
-      }
-
-      items[index] = {
-        ...items[index],
-        ...(req.body || {}),
-        id: items[index].id
-      };
-
-      await saveData(db);
-
-      res.json({
-        ok: true,
-        data: items[index]
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر تعديل الإعلان'
-      });
-    }
-  }
-);
-
-app.delete(
-  '/api/admin/announcements/:id',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const db =
-        await getData();
-
-      const items =
-        db.announcements || [];
-
-      const index =
-        items.findIndex(
-          item =>
-            String(item.id) ===
-            String(req.params.id)
-        );
-
-      if (index === -1) {
-        return res.status(404).json({
-          ok: false,
-          error:
-            'الإعلان غير موجود'
-        });
-      }
-
-      items.splice(index, 1);
-
-      await saveData(db);
-
-      res.json({
-        ok: true
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر حذف الإعلان'
-      });
-    }
-  }
-);
-
-/* =========================================================
-   البرامج
-========================================================= */
-
-app.get(
-  '/api/admin/programs',
-  requireAdmin,
-  async (req, res) => {
-    const db =
-      await getData();
-
-    res.json({
-      ok: true,
-      data:
-        db.programs || []
-    });
-  }
-);
-
-app.post(
-  '/api/admin/programs',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const db =
-        await getData();
-
-      if (!Array.isArray(db.programs)) {
-        db.programs = [];
-      }
-
-      const item = {
-        id:
-          createId(),
-        ...(req.body || {})
-      };
-
-      db.programs.push(item);
-
-      await saveData(db);
-
-      res.json({
-        ok: true,
-        data: item
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر إضافة البرنامج'
-      });
-    }
-  }
-);
-
-app.put(
-  '/api/admin/programs/:id',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const db =
-        await getData();
-
-      const items =
-        db.programs || [];
-
-      const index =
-        items.findIndex(
-          item =>
-            String(item.id) ===
-            String(req.params.id)
-        );
-
-      if (index === -1) {
-        return res.status(404).json({
-          ok: false,
-          error:
-            'البرنامج غير موجود'
-        });
-      }
-
-      items[index] = {
-        ...items[index],
-        ...(req.body || {}),
-        id: items[index].id
-      };
-
-      await saveData(db);
-
-      res.json({
-        ok: true,
-        data: items[index]
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر تعديل البرنامج'
-      });
-    }
-  }
-);
-
-app.delete(
-  '/api/admin/programs/:id',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const db =
-        await getData();
-
-      const items =
-        db.programs || [];
-
-      const index =
-        items.findIndex(
-          item =>
-            String(item.id) ===
-            String(req.params.id)
-        );
-
-      if (index === -1) {
-        return res.status(404).json({
-          ok: false,
-          error:
-            'البرنامج غير موجود'
-        });
-      }
-
-      items.splice(index, 1);
-
-      await saveData(db);
-
-      res.json({
-        ok: true
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر حذف البرنامج'
-      });
-    }
-  }
-);
-
-/* =========================================================
-   الأخبار
-========================================================= */
-
-app.get(
-  '/api/admin/news',
-  requireAdmin,
-  async (req, res) => {
-    const db =
-      await getData();
-
-    res.json({
-      ok: true,
-      data:
-        db.news || []
-    });
-  }
-);
-
-app.post(
-  '/api/admin/news',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const db =
-        await getData();
-
-      if (!Array.isArray(db.news)) {
-        db.news = [];
-      }
-
-      const item = {
-        id:
-          createId(),
-        ...(req.body || {})
-      };
-
-      db.news.push(item);
-
-      await saveData(db);
-
-      res.json({
-        ok: true,
-        data: item
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر إضافة الخبر'
-      });
-    }
-  }
-);
-
-app.put(
-  '/api/admin/news/:id',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const db =
-        await getData();
-
-      const items =
-        db.news || [];
-
-      const index =
-        items.findIndex(
-          item =>
-            String(item.id) ===
-            String(req.params.id)
-        );
-
-      if (index === -1) {
-        return res.status(404).json({
-          ok: false,
-          error:
-            'الخبر غير موجود'
-        });
-      }
-
-      items[index] = {
-        ...items[index],
-        ...(req.body || {}),
-        id: items[index].id
-      };
-
-      await saveData(db);
-
-      res.json({
-        ok: true,
-        data: items[index]
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر تعديل الخبر'
-      });
-    }
-  }
-);
-
-app.delete(
-  '/api/admin/news/:id',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const db =
-        await getData();
-
-      const items =
-        db.news || [];
-
-      const index =
-        items.findIndex(
-          item =>
-            String(item.id) ===
-            String(req.params.id)
-        );
-
-      if (index === -1) {
-        return res.status(404).json({
-          ok: false,
-          error:
-            'الخبر غير موجود'
-        });
-      }
-
-      items.splice(index, 1);
-
-      await saveData(db);
-
-      res.json({
-        ok: true
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر حذف الخبر'
-      });
-    }
-  }
-);
-
-/* =========================================================
-   Hero
-========================================================= */
-
-app.get(
-  '/api/admin/hero',
-  requireAdmin,
-  async (req, res) => {
-    const db =
-      await getData();
-
-    res.json({
-      ok: true,
-      data:
-        db.hero || []
-    });
-  }
-);
-
-app.post(
-  '/api/admin/hero',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const db =
-        await getData();
-
-      if (!Array.isArray(db.hero)) {
-        db.hero = [];
-      }
-
-      const item = {
-        id:
-          createId(),
-        ...(req.body || {})
-      };
-
-      db.hero.push(item);
-
-      await saveData(db);
-
-      res.json({
-        ok: true,
-        data: item
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر إضافة صورة الواجهة'
-      });
-    }
-  }
-);
-
-app.put(
-  '/api/admin/hero/:id',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const db =
-        await getData();
-
-      const items =
-        db.hero || [];
-
-      const index =
-        items.findIndex(
-          item =>
-            String(item.id) ===
-            String(req.params.id)
-        );
-
-      if (index === -1) {
-        return res.status(404).json({
-          ok: false,
-          error:
-            'الصورة غير موجودة'
-        });
-      }
-
-      items[index] = {
-        ...items[index],
-        ...(req.body || {}),
-        id: items[index].id
-      };
-
-      await saveData(db);
-
-      res.json({
-        ok: true,
-        data: items[index]
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر تعديل صورة الواجهة'
-      });
-    }
-  }
-);
-
-app.delete(
-  '/api/admin/hero/:id',
-  requireAdmin,
-  async (req, res) => {
-    try {
-      const db =
-        await getData();
-
-      const items =
-        db.hero || [];
-
-      const index =
-        items.findIndex(
-          item =>
-            String(item.id) ===
-            String(req.params.id)
-        );
-
-      if (index === -1) {
-        return res.status(404).json({
-          ok: false,
-          error:
-            'الصورة غير موجودة'
-        });
-      }
-
-      items.splice(index, 1);
-
-      await saveData(db);
-
-      res.json({
-        ok: true
-      });
-    } catch (error) {
-      res.status(500).json({
-        ok: false,
-        error:
-          'تعذر حذف صورة الواجهة'
-      });
-    }
-  }
-);
 
 /* =========================================================
    رفع الملفات
@@ -2543,19 +1567,24 @@ const storage =
         file,
         cb
       ) {
-        const ext =
+        const extension =
           path.extname(
             file.originalname
           );
 
         const name =
           crypto
-            .randomBytes(16)
-            .toString('hex');
+            .randomBytes(
+              16
+            )
+            .toString(
+              'hex'
+            );
 
         cb(
           null,
-          name + ext
+          name +
+            extension
         );
       }
   });
@@ -2566,7 +1595,9 @@ const upload =
 
     limits: {
       fileSize:
-        100 * 1024 * 1024
+        100 *
+        1024 *
+        1024
     }
   });
 
@@ -2596,7 +1627,10 @@ app.post(
   '/api/admin/upload',
   requireAdmin,
   upload.single('file'),
-  async (req, res) => {
+  async (
+    req,
+    res
+  ) => {
     try {
       if (!req.file) {
         return res.status(400).json({
@@ -2606,14 +1640,14 @@ app.post(
         });
       }
 
-      const ext =
+      const extension =
         path.extname(
           req.file.originalname
         ).toLowerCase();
 
       if (
         !allowedExtensions.includes(
-          ext
+          extension
         )
       ) {
         fs.unlinkSync(
@@ -2627,9 +1661,14 @@ app.post(
         });
       }
 
-      /* -----------------------------------------
-         رفع إلى Supabase Storage
-      ----------------------------------------- */
+      const db =
+        await getData();
+
+      ensureCms(db);
+
+      /* =========================
+         Supabase Storage
+      ========================= */
 
       if (USE_SUPABASE) {
         const fileBuffer =
@@ -2642,24 +1681,27 @@ app.post(
           '-' +
           req.file.filename;
 
-        const uploadResult =
+        const result =
           await supabase.storage
-            .from(BUCKET)
+            .from(
+              STORAGE_BUCKET
+            )
             .upload(
               storagePath,
               fileBuffer,
               {
                 contentType:
                   req.file.mimetype,
-                upsert: false
+                upsert:
+                  false
               }
             );
 
         if (
-          uploadResult.error
+          result.error
         ) {
           console.error(
-            uploadResult.error
+            result.error
           );
 
           return res.status(500).json({
@@ -2669,12 +1711,16 @@ app.post(
           });
         }
 
-        const publicResult =
+        const publicUrl =
           supabase.storage
-            .from(BUCKET)
+            .from(
+              STORAGE_BUCKET
+            )
             .getPublicUrl(
               storagePath
-            );
+            )
+            .data
+            .publicUrl;
 
         fs.unlinkSync(
           req.file.path
@@ -2691,7 +1737,7 @@ app.post(
             storagePath,
 
           url:
-            publicResult.data.publicUrl,
+            publicUrl,
 
           type:
             req.file.mimetype,
@@ -2703,11 +1749,6 @@ app.post(
             new Date().toISOString()
         };
 
-        const db =
-          await getData();
-
-        ensureCms(db);
-
         db.settings.cms.media.push(
           fileInfo
         );
@@ -2716,17 +1757,14 @@ app.post(
 
         return res.json({
           ok: true,
-          data: fileInfo
+          data:
+            fileInfo
         });
       }
 
-      /* -----------------------------------------
-         تخزين محلي
-      ----------------------------------------- */
-
-      const relativeUrl =
-        '/uploads/' +
-        req.file.filename;
+      /* =========================
+         التخزين المحلي
+      ========================= */
 
       const fileInfo = {
         id:
@@ -2739,7 +1777,8 @@ app.post(
           req.file.filename,
 
         url:
-          relativeUrl,
+          '/uploads/' +
+          req.file.filename,
 
         type:
           req.file.mimetype,
@@ -2751,11 +1790,6 @@ app.post(
           new Date().toISOString()
       };
 
-      const db =
-        await getData();
-
-      ensureCms(db);
-
       db.settings.cms.media.push(
         fileInfo
       );
@@ -2764,7 +1798,8 @@ app.post(
 
       res.json({
         ok: true,
-        data: fileInfo
+        data:
+          fileInfo
       });
     } catch (error) {
       console.error(
@@ -2782,30 +1817,39 @@ app.post(
 );
 
 /* =========================================================
-   حذف ملف من التخزين
+   حذف ملف
 ========================================================= */
 
 app.delete(
   '/api/admin/upload/:id',
   requireAdmin,
-  async (req, res) => {
+  async (
+    req,
+    res
+  ) => {
     try {
       const db =
         await getData();
 
       ensureCms(db);
 
-      const items =
+      const media =
         db.settings.cms.media;
 
       const index =
-        items.findIndex(
+        media.findIndex(
           item =>
-            String(item.id) ===
-            String(req.params.id)
+            String(
+              item.id
+            ) ===
+            String(
+              req.params.id
+            )
         );
 
-      if (index === -1) {
+      if (
+        index === -1
+      ) {
         return res.status(404).json({
           ok: false,
           error:
@@ -2814,27 +1858,32 @@ app.delete(
       }
 
       const file =
-        items[index];
+        media[index];
 
       if (
         USE_SUPABASE &&
         file.filename
       ) {
-        try {
+        const result =
           await supabase.storage
-            .from(BUCKET)
+            .from(
+              STORAGE_BUCKET
+            )
             .remove([
               file.filename
             ]);
-        } catch (storageError) {
+
+        if (
+          result.error
+        ) {
           console.error(
-            storageError
+            result.error
           );
         }
       } else if (
         file.filename
       ) {
-        const localPath =
+        const localFile =
           path.join(
             UPLOAD_DIR,
             file.filename
@@ -2842,16 +1891,19 @@ app.delete(
 
         if (
           fs.existsSync(
-            localPath
+            localFile
           )
         ) {
           fs.unlinkSync(
-            localPath
+            localFile
           );
         }
       }
 
-      items.splice(index, 1);
+      media.splice(
+        index,
+        1
+      );
 
       await saveData(db);
 
@@ -2871,7 +1923,7 @@ app.delete(
 );
 
 /* =========================================================
-   خدمة الملفات المحلية
+   ملفات الرفع المحلية
 ========================================================= */
 
 app.use(
@@ -2882,45 +1934,44 @@ app.use(
 );
 
 /* =========================================================
-   فحص حالة الخادم
+   فحص الخادم
 ========================================================= */
 
 app.get(
   '/api/health',
-  async (req, res) => {
-    let database =
-      'local';
-
-    let supabaseStatus =
+  async (
+    req,
+    res
+  ) => {
+    let supabaseOk =
       false;
 
-    if (USE_SUPABASE) {
-      database =
-        'supabase';
-
+    if (
+      USE_SUPABASE
+    ) {
       try {
         await getSupabaseData();
 
-        supabaseStatus =
+        supabaseOk =
           true;
       } catch (error) {
         console.error(
           'Supabase health error:',
           error
         );
-
-        supabaseStatus =
-          false;
       }
     }
 
     res.json({
       ok: true,
 
-      database,
+      database:
+        USE_SUPABASE
+          ? 'supabase'
+          : 'local',
 
       supabase:
-        supabaseStatus,
+        supabaseOk,
 
       cms: true,
 
@@ -2935,12 +1986,10 @@ app.get(
         announcements: true,
         programs: true,
         news: true,
+        documents: true,
         hero: true,
         uploads: true
-      },
-
-      publicDirectory:
-        PUBLIC
+      }
     });
   }
 );
@@ -2951,20 +2000,23 @@ app.get(
 
 app.use(
   express.static(
-    PUBLIC
+    PUBLIC_DIR
   )
 );
 
 /* =========================================================
-   صفحة الإدارة
+   لوحة الإدارة
 ========================================================= */
 
 app.get(
   '/admin',
-  (req, res) => {
+  (
+    req,
+    res
+  ) => {
     const adminFile =
       path.join(
-        PUBLIC,
+        PUBLIC_DIR,
         'admin.html'
       );
 
@@ -2986,14 +2038,18 @@ app.get(
 
 /* =========================================================
    الصفحة الرئيسية
+   لا نستخدم app.get('*')
+   لأن Express 5 يسبب PathError
 ========================================================= */
 
-app.get(
-  '*',
-  (req, res) => {
+app.use(
+  (
+    req,
+    res
+  ) => {
     const indexFile =
       path.join(
-        PUBLIC,
+        PUBLIC_DIR,
         'index.html'
       );
 
@@ -3032,7 +2088,9 @@ app.use(
     if (
       res.headersSent
     ) {
-      return next(error);
+      return next(
+        error
+      );
     }
 
     res.status(500).json({
@@ -3062,11 +2120,6 @@ app.listen(
     console.log(
       'Port:',
       PORT
-    );
-
-    console.log(
-      'Public:',
-      PUBLIC
     );
 
     console.log(

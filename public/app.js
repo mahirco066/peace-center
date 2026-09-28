@@ -1,33 +1,25 @@
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
 
-/* =========================
-   السنة الحالية
-========================= */
 const yearEl = $('#year');
-if (yearEl) {
-  yearEl.textContent = new Date().getFullYear();
-}
+if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-/* =========================
-   القائمة الرئيسية
-========================= */
+/* القائمة */
 const menuBtn = $('#menuBtn');
 const nav = $('#mainNav');
 
-menuBtn?.addEventListener('click', () => {
-  nav?.classList.toggle('open');
-});
+menuBtn?.addEventListener('click', () => nav?.classList.toggle('open'));
 
-$$('#mainNav a').forEach((a) => {
-  a.addEventListener('click', () => {
-    nav?.classList.remove('open');
-  });
-});
+$$('#mainNav a').forEach(a =>
+  a.addEventListener('click', () => nav?.classList.remove('open'))
+);
 
-/* =========================
+
+/* =========================================================
    الشريط الإعلاني
-========================= */
+   تعديل الشريط فقط
+========================================================= */
+
 const ticker = $('#tickerTrack');
 const pauseBtn = $('#pauseTicker');
 
@@ -42,418 +34,668 @@ function escapeHtml(value) {
     .replace(/'/g, '&#039;');
 }
 
-/*
-  تجهيز الشريط الإعلاني
-  يتم تكرار الإعلانات حتى تستمر الحركة
-  بصورة متواصلة بدون ظهور فراغ.
-*/
-function buildTicker(announcements) {
+
+function setupTicker(items) {
+
   if (!ticker) return;
 
-  const items = Array.isArray(announcements)
-    ? announcements
-        .filter((a) => a && a.visible !== false)
-        .map((a) => a.text || a.title || '')
-        .filter(Boolean)
-    : [];
+  const texts = (Array.isArray(items) ? items : [])
+    .filter(a => a && a.visible !== false)
+    .map(a => a.text || a.title || '')
+    .filter(Boolean);
 
-  if (!items.length) {
+  if (!texts.length) {
     ticker.innerHTML = '';
-    ticker.classList.add('ticker-empty');
     return;
   }
 
-  ticker.classList.remove('ticker-empty');
+  /*
+    تكرار الإعلانات حتى تستمر الحركة
+    بصورة متواصلة.
+  */
+  const repeated = [...texts, ...texts];
+
+  ticker.innerHTML = repeated.map(text => `
+    <span class="ticker-item">
+      ${escapeHtml(text)}
+    </span>
+  `).join('');
+
 
   /*
-    نكرر المحتوى مرتين حتى يمكن عمل حركة
-    مستمرة وسلسة.
+    تجهيز الشريط للحركة
   */
-  const repeated = [...items, ...items];
 
-  ticker.innerHTML = repeated
-    .map(
-      (text) => `
-        <span class="ticker-item">
-          ${escapeHtml(text)}
-        </span>
-      `
-    )
-    .join('');
+  const trackParent = ticker.parentElement;
+
+  if (trackParent) {
+    trackParent.style.overflow = 'hidden';
+    trackParent.style.position = 'relative';
+  }
+
+
+  ticker.style.display = 'flex';
+  ticker.style.width = 'max-content';
+  ticker.style.maxWidth = 'none';
+  ticker.style.alignItems = 'center';
+  ticker.style.gap = '55px';
+  ticker.style.direction = 'ltr';
+  ticker.style.animation =
+    'peaceTickerMove 28s linear infinite';
+  ticker.style.willChange = 'transform';
+
+  ticker.style.animationPlayState =
+    tickerPaused ? 'paused' : 'running';
+
+
+  ticker.querySelectorAll('.ticker-item').forEach(item => {
+
+    item.style.display = 'inline-flex';
+    item.style.flex = '0 0 auto';
+    item.style.direction = 'rtl';
+    item.style.whiteSpace = 'nowrap';
+
+  });
+
 
   /*
-    إعطاء مدة مناسبة للحركة حسب عدد الإعلانات
+    إضافة CSS الخاص بالشريط مرة واحدة فقط
   */
-  const itemCount = items.length;
-  const duration = Math.max(18, itemCount * 8);
 
-  ticker.style.setProperty('--ticker-duration', `${duration}s`);
-  ticker.style.animationPlayState = tickerPaused ? 'paused' : 'running';
+  if (!document.getElementById('peaceTickerStyle')) {
+
+    const style = document.createElement('style');
+
+    style.id = 'peaceTickerStyle';
+
+    style.textContent = `
+
+      @keyframes peaceTickerMove {
+
+        from {
+          transform: translateX(0);
+        }
+
+        to {
+          transform: translateX(-50%);
+        }
+
+      }
+
+      #tickerTrack .ticker-item {
+        font-family: inherit;
+      }
+
+      #tickerTrack:hover {
+        animation-play-state: paused !important;
+      }
+
+    `;
+
+    document.head.appendChild(style);
+
+  }
+
 }
 
-/* زر إيقاف / تشغيل */
-pauseBtn?.addEventListener('click', (e) => {
+
+/* زر إيقاف وتشغيل الشريط */
+
+pauseBtn?.addEventListener('click', e => {
+
   tickerPaused = !tickerPaused;
 
   if (ticker) {
-    ticker.style.animationPlayState = tickerPaused
-      ? 'paused'
-      : 'running';
+
+    ticker.style.animationPlayState =
+      tickerPaused ? 'paused' : 'running';
+
   }
 
-  e.currentTarget.textContent = tickerPaused ? '▶' : 'Ⅱ';
+  e.currentTarget.textContent =
+    tickerPaused ? '▶' : 'Ⅱ';
 
   e.currentTarget.setAttribute(
     'aria-label',
-    tickerPaused ? 'تشغيل الحركة' : 'إيقاف الحركة'
+    tickerPaused
+      ? 'تشغيل الحركة'
+      : 'إيقاف الحركة'
   );
+
 });
 
-/*
-  أزرار السابق والتالي
-*/
+
+/* زر الإعلان التالي */
+
 $('[data-next]')?.addEventListener('click', () => {
-  if (!ticker) return;
 
-  ticker.classList.add('manual-move');
+  if (!ticker?.firstElementChild) return;
 
-  const first = ticker.firstElementChild;
+  ticker.appendChild(
+    ticker.firstElementChild
+  );
 
-  if (first) {
-    ticker.appendChild(first);
-  }
-
-  setTimeout(() => {
-    ticker.classList.remove('manual-move');
-  }, 50);
 });
+
+
+/* زر الإعلان السابق */
 
 $('[data-prev]')?.addEventListener('click', () => {
-  if (!ticker) return;
 
-  ticker.classList.add('manual-move');
+  if (!ticker?.lastElementChild) return;
 
-  const last = ticker.lastElementChild;
+  ticker.insertBefore(
+    ticker.lastElementChild,
+    ticker.firstElementChild
+  );
 
-  if (last) {
-    ticker.insertBefore(last, ticker.firstElementChild);
-  }
-
-  setTimeout(() => {
-    ticker.classList.remove('manual-move');
-  }, 50);
 });
 
-/* =========================
+
+/* =========================================================
    المحتوى القادم من لوحة التحكم
-========================= */
+========================================================= */
+
 (async function loadManagedContent() {
+
   try {
-    const response = await fetch('/api/public', {
+
+    const r = await fetch('/api/public', {
       cache: 'no-store'
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+    if (!r.ok) {
+      throw new Error(`HTTP ${r.status}`);
     }
 
-    const d = await response.json();
+    const d = await r.json();
 
-    /* =========================
+
+    /* =====================================================
        الإعلانات
-    ========================= */
-    buildTicker(d.announcements || []);
+    ===================================================== */
 
-    /* =========================
-       شرائح الواجهة الرئيسية
-    ========================= */
+    setupTicker(
+      d.announcements || []
+    );
+
+
+    /* =====================================================
+       الواجهة الرئيسية
+       الحفاظ على صورة التبلدي
+    ===================================================== */
+
     const heroBox = $('#heroSlides');
     const dotsBox = $('#heroDots');
 
-    if (
-      heroBox &&
-      dotsBox &&
-      Array.isArray(d.hero) &&
-      d.hero.length
-    ) {
-      heroBox.innerHTML = d.hero
-        .map(
-          (h, i) => `
-            <div
-              class="hero-slide ${i === 0 ? 'active' : ''}"
-              style="background-image:url('${String(
-                h.image || ''
-              ).replace(/'/g, '%27')}')"
-            ></div>
-          `
-        )
-        .join('');
 
-      dotsBox.innerHTML = d.hero
-        .map(
-          (_, i) =>
-            `<button class="${i === 0 ? 'active' : ''}" aria-label="الشريحة ${
-              i + 1
-            }"></button>`
-        )
-        .join('');
+    /*
+      صورة التبلدي الأصلية كصورة احتياطية
+      إذا لم توجد صورة صحيحة في قاعدة البيانات.
+    */
 
-      const slides = [
-        ...heroBox.querySelectorAll('.hero-slide')
-      ];
+    const fallbackHero = [
 
-      const dots = [
-        ...dotsBox.querySelectorAll('button')
-      ];
+      {
+        image:
+          'https://upload.wikimedia.org/wikipedia/commons/2/2b/Baobab_vibes_01.jpg',
 
-      let index = 0;
+        caption:
+          'شجرة التبلدي في غرب كردفان',
 
-      function goToSlide(i) {
+        source:
+          'Wikimedia Commons · CC BY-SA 4.0',
+
+        url:
+          'https://commons.wikimedia.org/wiki/File:Baobab_vibes_01.jpg'
+      }
+
+    ];
+
+
+    const heroes =
+      Array.isArray(d.hero)
+        ? d.hero.filter(
+            h => h && h.image
+          )
+        : [];
+
+
+    const finalHeroes =
+      heroes.length
+        ? heroes
+        : fallbackHero;
+
+
+    if (heroBox && dotsBox) {
+
+      heroBox.innerHTML =
+        finalHeroes.map((h, i) => `
+
+          <div
+            class="hero-slide ${i === 0 ? 'active' : ''}"
+            style="
+              background-image:url('${String(
+                h.image
+              ).replace(/'/g, "%27")}')
+            "
+          ></div>
+
+        `).join('');
+
+
+      dotsBox.innerHTML =
+        finalHeroes.map((_, i) => `
+
+          <button
+            class="${i === 0 ? 'active' : ''}"
+            aria-label="الشريحة ${i + 1}"
+          ></button>
+
+        `).join('');
+
+
+      const slides =
+        [...heroBox.querySelectorAll(
+          '.hero-slide'
+        )];
+
+
+      const dots =
+        [...dotsBox.querySelectorAll(
+          'button'
+        )];
+
+
+      let ix = 0;
+
+
+      function go(i) {
+
         if (!slides.length) return;
 
-        index = (i + slides.length) % slides.length;
+        ix =
+          (i + slides.length) %
+          slides.length;
 
-        slides.forEach((slide, n) => {
-          slide.classList.toggle('active', n === index);
+
+        slides.forEach((x, n) => {
+
+          x.classList.toggle(
+            'active',
+            n === ix
+          );
+
         });
 
-        dots.forEach((dot, n) => {
-          dot.classList.toggle('active', n === index);
+
+        dots.forEach((x, n) => {
+
+          x.classList.toggle(
+            'active',
+            n === ix
+          );
+
         });
 
-        const h = d.hero[index];
 
-        const creditText = $('#photoCreditText');
-        const creditLink = $('#photoCreditLink');
+        const h =
+          finalHeroes[ix];
 
-        if (creditText) {
-          creditText.textContent =
-            `الصورة: ${h.caption || ''} —`;
+
+        const t =
+          $('#photoCreditText');
+
+        const a =
+          $('#photoCreditLink');
+
+
+        if (t) {
+
+          t.textContent =
+            `الصورة: ${
+              h.caption || ''
+            } —`;
+
         }
 
-        if (creditLink) {
-          creditLink.textContent = h.source || '';
-          creditLink.href = h.url || '#';
+
+        if (a) {
+
+          a.textContent =
+            h.source || '';
+
+          a.href =
+            h.url || '#';
+
         }
+
       }
 
-      $('.hero-next')?.addEventListener('click', () => {
-        goToSlide(index + 1);
+
+      $('.hero-next')?.addEventListener(
+        'click',
+        () => go(ix + 1)
+      );
+
+
+      $('.hero-prev')?.addEventListener(
+        'click',
+        () => go(ix - 1)
+      );
+
+
+      dots.forEach((b, n) => {
+
+        b.addEventListener(
+          'click',
+          () => go(n)
+        );
+
       });
 
-      $('.hero-prev')?.addEventListener('click', () => {
-        goToSlide(index - 1);
-      });
 
-      dots.forEach((button, n) => {
-        button.addEventListener('click', () => {
-          goToSlide(n);
-        });
-      });
+      go(0);
 
-      goToSlide(0);
 
       if (slides.length > 1) {
-        setInterval(() => {
-          goToSlide(index + 1);
-        }, 7000);
+
+        setInterval(
+          () => go(ix + 1),
+          7000
+        );
+
       }
+
     }
 
-    /* =========================
-       قسم عن المركز
-    ========================= */
+
+    /* =====================================================
+       عن المركز
+    ===================================================== */
+
     if (d.settings) {
-      const aboutTitle = $('.about-copy h2');
-      const aboutParagraphs = $$('.about-copy p');
+
+      const aboutTitle =
+        $('.about-copy h2');
+
+      const ps =
+        $$('.about-copy p');
+
 
       if (aboutTitle) {
+
         aboutTitle.textContent =
           d.settings.aboutTitle ||
           aboutTitle.textContent;
+
       }
 
-      if (aboutParagraphs[0]) {
-        aboutParagraphs[0].textContent =
+
+      if (ps[0]) {
+
+        ps[0].textContent =
           d.settings.aboutText1 ||
-          aboutParagraphs[0].textContent;
+          ps[0].textContent;
+
       }
 
-      if (aboutParagraphs[1]) {
-        aboutParagraphs[1].textContent =
+
+      if (ps[1]) {
+
+        ps[1].textContent =
           d.settings.aboutText2 ||
-          aboutParagraphs[1].textContent;
+          ps[1].textContent;
+
       }
+
     }
 
-    /* =========================
+
+    /* =====================================================
        البحوث والدراسات
-    ========================= */
-    const research = $('#researchGrid');
+    ===================================================== */
+
+    const research =
+      $('#researchGrid');
+
 
     if (
       research &&
-      Array.isArray(d.documents) &&
+      d.documents &&
       d.documents.length
     ) {
-      research.innerHTML = d.documents
-        .map((doc, i) => {
-          const title =
-            doc.title ||
-            doc.name ||
-            `بحث ودراسة ${i + 1}`;
 
-          const text =
-            doc.description ||
-            doc.text ||
-            'إصدار علمي من منشورات مركز دراسات السلام والتنمية.';
+      research.innerHTML =
+        d.documents.map(
+          (doc, i) => {
 
-          const href =
-            doc.url ||
-            doc.file ||
-            doc.path ||
-            '#';
+            const title =
+              doc.title ||
+              doc.name ||
+              `بحث ودراسة ${i + 1}`;
 
-          return `
-            <article class="research-card">
-              <div class="research-icon">▤</div>
 
-              <div>
-                <span class="research-tag">
-                  بحث ودراسة
-                </span>
+            const text =
+              doc.description ||
+              doc.text ||
+              'إصدار علمي من منشورات مركز دراسات السلام والتنمية.';
 
-                <h3>${escapeHtml(title)}</h3>
 
-                <p>${escapeHtml(text)}</p>
+            const href =
+              doc.url ||
+              doc.file ||
+              doc.path ||
+              '#';
 
-                <a
-                  href="${escapeHtml(href)}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  فتح البحث ←
-                </a>
-              </div>
-            </article>
-          `;
-        })
-        .join('');
+
+            return `
+
+              <article class="research-card">
+
+                <div class="research-icon">
+                  ▤
+                </div>
+
+                <div>
+
+                  <span class="research-tag">
+                    بحث ودراسة
+                  </span>
+
+                  <h3>
+                    ${escapeHtml(title)}
+                  </h3>
+
+                  <p>
+                    ${escapeHtml(text)}
+                  </p>
+
+                  <a
+                    href="${escapeHtml(href)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    فتح البحث ←
+                  </a>
+
+                </div>
+
+              </article>
+
+            `;
+
+          }
+        ).join('');
+
     }
 
-    /* =========================
+
+    /* =====================================================
        البرامج
-    ========================= */
-    const programs = $('.program-grid');
+    ===================================================== */
+
+    const programs =
+      $('.program-grid');
+
 
     if (
       programs &&
-      Array.isArray(d.programs)
+      d.programs
     ) {
-      programs.innerHTML = d.programs
-        .map(
+
+      programs.innerHTML =
+        d.programs.map(
           (p, i) => `
+
             <article>
+
               <span class="num">
-                ${String(i + 1).padStart(2, '0')}
+                0${i + 1}
               </span>
 
               <h3>
-                ${escapeHtml(p.title || '')}
+                ${escapeHtml(
+                  p.title || ''
+                )}
               </h3>
 
               <p>
-                ${escapeHtml(p.text || '')}
+                ${escapeHtml(
+                  p.text || ''
+                )}
               </p>
+
             </article>
+
           `
-        )
-        .join('');
+        ).join('');
+
     }
 
-    /* =========================
+
+    /* =====================================================
        الأخبار
-    ========================= */
-    const news = $('.news-grid');
+    ===================================================== */
+
+    const news =
+      $('.news-grid');
+
 
     if (
       news &&
-      Array.isArray(d.news)
+      d.news
     ) {
-      news.innerHTML = d.news
-        .map((n, i) => {
-          const icons = [
-            '🕊️',
-            '📚',
-            '🎓',
-            '🤝',
-            '🌱',
-            '📰'
-          ];
 
-          const icon =
-            n.icon ||
-            icons[i % icons.length];
+      news.innerHTML =
+        d.news.map(
+          (n, i) => {
 
-          const category =
-            n.category ||
-            n.type ||
-            'أخبار المركز';
+            const icons = [
+              '🕊️',
+              '📚',
+              '🎓',
+              '🤝',
+              '🌱',
+              '📰'
+            ];
 
-          const imageStyle = n.image
-            ? `background-image:url('${String(
-                n.image
-              ).replace(/'/g, '%27')}')`
-            : '';
 
-          return `
-            <article class="news-card">
+            const icon =
+              n.icon ||
+              icons[
+                i % icons.length
+              ];
 
-              <div
-                class="news-img"
-                style="${imageStyle}"
-              >
-                <span class="news-icon">
-                  ${escapeHtml(icon)}
-                </span>
-              </div>
 
-              <div class="news-body">
+            const category =
+              n.category ||
+              n.type ||
+              'أخبار المركز';
 
-                <div class="news-meta">
-                  <small>
-                    ${escapeHtml(category)}
-                  </small>
 
-                  <time>
-                    ${escapeHtml(n.date || '')}
-                  </time>
+            return `
+
+              <article class="news-card">
+
+                <div
+                  class="news-img"
+                  style="${
+                    n.image
+                      ? `background-image:url('${String(
+                          n.image
+                        ).replace(
+                          /'/g,
+                          "%27"
+                        )}')`
+                      : ''
+                  }"
+                >
+
+                  <span class="news-icon">
+                    ${escapeHtml(icon)}
+                  </span>
+
                 </div>
 
-                <h3>
-                  ${escapeHtml(n.title || '')}
-                </h3>
 
-                <p>
-                  ${escapeHtml(n.text || '')}
-                </p>
+                <div class="news-body">
 
-                <a href="#contact">
-                  اقرأ المزيد <b>←</b>
-                </a>
+                  <div class="news-meta">
 
-              </div>
+                    <small>
+                      ${escapeHtml(
+                        category
+                      )}
+                    </small>
 
-            </article>
-          `;
-        })
-        .join('');
+                    <time>
+                      ${escapeHtml(
+                        n.date || ''
+                      )}
+                    </time>
+
+                  </div>
+
+
+                  <h3>
+                    ${escapeHtml(
+                      n.title || ''
+                    )}
+                  </h3>
+
+
+                  <p>
+                    ${escapeHtml(
+                      n.text || ''
+                    )}
+                  </p>
+
+
+                  <a href="#contact">
+                    اقرأ المزيد
+                    <b>←</b>
+                  </a>
+
+                </div>
+
+              </article>
+
+            `;
+
+          }
+        ).join('');
+
     }
 
+
   } catch (e) {
+
     console.warn(
       'Managed content unavailable',
       e
     );
+
   }
+
 })();

@@ -1,40 +1,3466 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>لوحة تحكم المركز</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap"><style>
-*{box-sizing:border-box}body{margin:0;font-family:Cairo,sans-serif;background:#f3f7f6;color:#123f40}.login{min-height:100vh;display:grid;place-items:center;background:linear-gradient(135deg,#07564f,#0b7a70)}.login-card,.panel{background:#fff;border-radius:18px;box-shadow:0 15px 40px #063f3b22}.login-card{width:min(430px,92%);padding:30px}.login-card h1{text-align:center;color:#075c62;margin:0 0 6px;font-size:24px}.login-card p{text-align:center;color:#718083;font-size:12px;margin:0 0 22px}.field{margin-bottom:13px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:5px}.field input,.field textarea,.field select{width:100%;border:1px solid #d7e5e3;border-radius:10px;padding:10px;font:inherit;font-size:12px;outline:none}.field textarea{min-height:90px;resize:vertical}.btn{border:0;border-radius:10px;padding:10px 16px;font:inherit;font-size:12px;font-weight:800;cursor:pointer}.primary{background:#08766c;color:#fff}.gold{background:#d4a94f;color:#173e3e}.danger{background:#c94d4d;color:#fff}.light{background:#eef5f3;color:#075c62}.login .btn{width:100%;margin-top:5px}.error{color:#b63b3b;text-align:center;font-size:11px;margin-top:10px;min-height:18px}.app{display:none}.top{height:72px;background:#07564f;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 4%;position:sticky;top:0;z-index:20}.top h1{font-size:18px;margin:0}.top small{font-size:9px;color:#c9e3df;display:block}.wrap{width:min(1200px,94%);margin:22px auto}.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}.stat{background:#fff;padding:15px;border-radius:13px;border:1px solid #e1ecea}.stat b{display:block;font-size:23px;color:#08766c}.stat span{font-size:10px;color:#708082}.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:15px}.tab{background:#fff;border:1px solid #d9e5e3;color:#075c62}.tab.active{background:#075f58;color:#fff}.section{display:none}.section.active{display:block}.panel{padding:18px;margin-bottom:16px}.panel h2{font-size:17px;margin:0 0 15px;color:#075c62}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.list{display:grid;gap:10px}.item{border:1px solid #e0ebe9;border-radius:12px;padding:12px;background:#fbfdfc}.item-head{display:flex;justify-content:space-between;gap:10px;align-items:start}.item h3{font-size:13px;margin:0;color:#075c62}.item p{font-size:10px;color:#657879;margin:5px 0}.actions{display:flex;gap:6px;flex-wrap:wrap}.actions .btn{padding:6px 9px;font-size:10px}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.toolbar h2{margin:0}.toast{position:fixed;left:20px;bottom:20px;background:#07564f;color:#fff;padding:10px 16px;border-radius:10px;font-size:11px;display:none;z-index:50}.preview{max-width:100%;max-height:120px;border-radius:10px;margin-top:7px}.check{font-size:11px;color:#637879}.logout{background:#ffffff18;color:#fff;border:1px solid #ffffff44}.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;z-index:40;padding:15px}.modal.show{display:flex}.modal-box{background:#fff;border-radius:16px;width:min(620px,96%);max-height:92vh;overflow:auto;padding:20px}.modal-head{display:flex;justify-content:space-between;align-items:center}.modal-head h3{margin:0;color:#075c62}.close{border:0;background:#eef5f3;border-radius:50%;width:32px;height:32px;cursor:pointer}.empty{text-align:center;color:#849393;font-size:11px;padding:20px}
-@media(max-width:900px){.cards{grid-template-columns:repeat(3,1fr)}.grid{grid-template-columns:1fr}}
-@media(max-width:600px){.top{height:64px}.top h1{font-size:13px}.cards{grid-template-columns:1fr 1fr}.wrap{width:94%}.toolbar{align-items:flex-start;flex-direction:column}.tabs{overflow:auto;flex-wrap:nowrap;padding-bottom:3px}.tab{white-space:nowrap}}
-</style></head><body>
-<div id="login" class="login"><div class="login-card"><h1>لوحة تحكم المركز</h1><p>مركز دراسات السلام والتنمية – جامعة السلام</p><form id="loginForm"><div class="field"><label>اسم المستخدم</label><input id="username" required autocomplete="username"></div><div class="field"><label>كلمة المرور</label><input id="password" type="password" required autocomplete="current-password"></div><button class="btn primary">دخول لوحة التحكم</button><div id="loginError" class="error"></div></form></div></div>
-<div id="app" class="app"><header class="top"><div><h1>لوحة تحكم مركز دراسات السلام والتنمية</h1><small>إدارة المحتوى والملفات والصور</small></div><button id="logout" class="btn logout">تسجيل الخروج</button></header><main class="wrap">
-<div class="cards"><div class="stat"><b id="sNews">0</b><span>الأخبار</span></div><div class="stat"><b id="sPrograms">0</b><span>البرامج</span></div><div class="stat"><b id="sAnn">0</b><span>الإعلانات</span></div><div class="stat"><b id="sDocs">0</b><span>الملفات</span></div><div class="stat"><b id="sHero">0</b><span>صور الواجهة</span></div></div>
-<div class="tabs"><button class="btn tab active" data-tab="news">الأخبار</button><button class="btn tab" data-tab="programs">البرامج</button><button class="btn tab" data-tab="ann">الإعلانات</button><button class="btn tab" data-tab="hero">صور الواجهة</button><button class="btn tab" data-tab="docs">الملفات</button><button class="btn tab" data-tab="settings">عن المركز</button><button class="btn tab" data-tab="account">الحساب</button></div>
-<section id="sec-news" class="section active"><div class="panel"><div class="toolbar"><h2>الأخبار والدراسات</h2><button class="btn primary" onclick="openForm('news')">+ إضافة خبر</button></div><div id="list-news" class="list"></div></div></section>
-<section id="sec-programs" class="section"><div class="panel"><div class="toolbar"><h2>البرامج والخدمات</h2><button class="btn primary" onclick="openForm('programs')">+ إضافة برنامج</button></div><div id="list-programs" class="list"></div></div></section>
-<section id="sec-ann" class="section"><div class="panel"><div class="toolbar"><h2>شريط الإعلانات المتحرك</h2><button class="btn primary" onclick="openForm('announcements')">+ إضافة إعلان</button></div><div id="list-announcements" class="list"></div></div></section>
-<section id="sec-hero" class="section"><div class="panel"><div class="toolbar"><h2>صور الواجهة الرئيسية</h2><button class="btn primary" onclick="openForm('hero')">+ إضافة صورة</button></div><div id="list-hero" class="list"></div></div></section>
-<section id="sec-docs" class="section"><div class="panel"><div class="toolbar"><h2>الملفات والمستندات</h2><button class="btn primary" onclick="openForm('documents')">+ إضافة ملف</button></div><div id="list-documents" class="list"></div></div></section>
-<section id="sec-settings" class="section"><div class="panel"><h2>تعديل بيانات «عن المركز»</h2><form id="settingsForm"><div class="field"><label>عنوان المركز</label><input name="siteTitle"></div><div class="field"><label>الجهة</label><input name="subtitle"></div><div class="field"><label>عنوان قسم عن المركز</label><input name="aboutTitle"></div><div class="field"><label>الفقرة الأولى</label><textarea name="aboutText1"></textarea></div><div class="field"><label>الفقرة الثانية</label><textarea name="aboutText2"></textarea></div><button class="btn primary">حفظ التعديلات</button></form></div></section>
-<section id="sec-account" class="section"><div class="panel"><h2>تغيير بيانات الدخول</h2><form id="accountForm"><div class="field"><label>اسم المستخدم الجديد</label><input name="username" required></div><div class="field"><label>كلمة المرور الجديدة</label><input name="password" type="password" minlength="8" required></div><p class="check">كلمة المرور يجب أن تكون 8 أحرف أو أكثر.</p><button class="btn gold">حفظ بيانات الدخول</button></form></div></section>
-</main></div><div id="modal" class="modal"><div class="modal-box"><div class="modal-head"><h3 id="modalTitle">إضافة</h3><button class="close" onclick="closeModal()">×</button></div><form id="itemForm"></form></div></div><div id="toast" class="toast"></div>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>لوحة تحكم مركز دراسات السلام والتنمية</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Cairo,sans-serif;
+  background:#f3f7f6;
+  color:#123f40;
+}
+
+button,
+input,
+textarea,
+select{
+  font-family:inherit;
+}
+
+.login{
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(135deg,#07564f,#0b7a70);
+  padding:20px;
+}
+
+.login-card{
+  width:min(440px,100%);
+  background:#fff;
+  border-radius:20px;
+  padding:32px;
+  box-shadow:0 20px 60px #063f3b33;
+}
+
+.login-card h1{
+  text-align:center;
+  color:#075c62;
+  margin:0 0 7px;
+  font-size:25px;
+}
+
+.login-card p{
+  text-align:center;
+  color:#718083;
+  font-size:12px;
+  margin:0 0 25px;
+}
+
+.field{
+  margin-bottom:14px;
+}
+
+.field label{
+  display:block;
+  font-size:12px;
+  font-weight:700;
+  margin-bottom:6px;
+}
+
+.field input,
+.field textarea,
+.field select{
+  width:100%;
+  border:1px solid #d7e5e3;
+  border-radius:10px;
+  padding:11px;
+  font-size:12px;
+  outline:none;
+  background:#fff;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus{
+  border-color:#08766c;
+  box-shadow:0 0 0 3px #08766c12;
+}
+
+.field textarea{
+  min-height:95px;
+  resize:vertical;
+}
+
+.btn{
+  border:0;
+  border-radius:10px;
+  padding:10px 16px;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.btn:hover{
+  transform:translateY(-1px);
+  opacity:.94;
+}
+
+.primary{
+  background:#08766c;
+  color:#fff;
+}
+
+.gold{
+  background:#d4a94f;
+  color:#173e3e;
+}
+
+.danger{
+  background:#c94d4d;
+  color:#fff;
+}
+
+.light{
+  background:#eef5f3;
+  color:#075c62;
+}
+
+.blue{
+  background:#287bb5;
+  color:#fff;
+}
+
+.logout{
+  background:#ffffff18;
+  color:#fff;
+  border:1px solid #ffffff44;
+}
+
+.login .btn{
+  width:100%;
+  margin-top:5px;
+}
+
+.error{
+  color:#b63b3b;
+  text-align:center;
+  font-size:11px;
+  margin-top:10px;
+  min-height:18px;
+}
+
+.app{
+  display:none;
+}
+
+.top{
+  min-height:72px;
+  background:#07564f;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+  padding:10px 4%;
+  position:sticky;
+  top:0;
+  z-index:20;
+  box-shadow:0 3px 15px #063f3b22;
+}
+
+.top h1{
+  font-size:18px;
+  margin:0;
+}
+
+.top small{
+  font-size:9px;
+  color:#c9e3df;
+  display:block;
+  margin-top:2px;
+}
+
+.wrap{
+  width:min(1250px,94%);
+  margin:22px auto;
+}
+
+.cards{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:11px;
+  margin-bottom:18px;
+}
+
+.stat{
+  background:#fff;
+  padding:15px;
+  border-radius:13px;
+  border:1px solid #e1ecea;
+  box-shadow:0 4px 14px #123f4008;
+}
+
+.stat b{
+  display:block;
+  font-size:22px;
+  color:#08766c;
+}
+
+.stat span{
+  font-size:10px;
+  color:#708082;
+}
+
+.tabs{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  margin-bottom:15px;
+}
+
+.tab{
+  background:#fff;
+  border:1px solid #d9e5e3;
+  color:#075c62;
+}
+
+.tab.active{
+  background:#075f58;
+  color:#fff;
+}
+
+.section{
+  display:none;
+}
+
+.section.active{
+  display:block;
+}
+
+.panel{
+  background:#fff;
+  border-radius:18px;
+  box-shadow:0 10px 30px #063f3b0b;
+  padding:20px;
+  margin-bottom:16px;
+}
+
+.panel h2{
+  font-size:17px;
+  margin:0 0 15px;
+  color:#075c62;
+}
+
+.panel h3{
+  color:#075c62;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+}
+
+.grid-3{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:15px;
+}
+
+.list{
+  display:grid;
+  gap:10px;
+}
+
+.item{
+  border:1px solid #e0ebe9;
+  border-radius:13px;
+  padding:13px;
+  background:#fbfdfc;
+}
+
+.item-head{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:flex-start;
+}
+
+.item h3{
+  font-size:13px;
+  margin:0;
+  color:#075c62;
+}
+
+.item p{
+  font-size:10px;
+  color:#657879;
+  margin:6px 0;
+  line-height:1.8;
+}
+
+.item-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  margin-top:7px;
+}
+
+.badge{
+  display:inline-block;
+  padding:3px 8px;
+  border-radius:20px;
+  background:#eaf4f1;
+  color:#075c62;
+  font-size:9px;
+}
+
+.actions{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+}
+
+.actions .btn{
+  padding:6px 9px;
+  font-size:10px;
+}
+
+.toolbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:14px;
+}
+
+.toolbar h2{
+  margin:0;
+}
+
+.empty{
+  text-align:center;
+  color:#849393;
+  font-size:11px;
+  padding:25px;
+  border:1px dashed #d8e5e3;
+  border-radius:12px;
+}
+
+.preview{
+  max-width:180px;
+  max-height:120px;
+  border-radius:10px;
+  margin-top:8px;
+  object-fit:cover;
+}
+
+.file-box{
+  padding:12px;
+  border:1px dashed #bdd5d1;
+  border-radius:12px;
+  background:#f7fbfa;
+  margin-top:10px;
+}
+
+.check{
+  font-size:11px;
+  color:#637879;
+  line-height:1.8;
+}
+
+.toast{
+  position:fixed;
+  left:20px;
+  bottom:20px;
+  background:#07564f;
+  color:#fff;
+  padding:11px 17px;
+  border-radius:10px;
+  font-size:11px;
+  display:none;
+  z-index:50;
+  box-shadow:0 10px 30px #0003;
+}
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:#0008;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:40;
+  padding:15px;
+}
+
+.modal.show{
+  display:flex;
+}
+
+.modal-box{
+  background:#fff;
+  border-radius:18px;
+  width:min(700px,96%);
+  max-height:92vh;
+  overflow:auto;
+  padding:20px;
+}
+
+.modal-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:15px;
+}
+
+.modal-head h3{
+  margin:0;
+  color:#075c62;
+}
+
+.close{
+  border:0;
+  background:#eef5f3;
+  color:#075c62;
+  border-radius:50%;
+  width:32px;
+  height:32px;
+  cursor:pointer;
+  font-size:18px;
+}
+
+.cover{
+  width:100%;
+  height:130px;
+  object-fit:cover;
+  border-radius:12px;
+  margin-top:8px;
+}
+
+.divider{
+  height:1px;
+  background:#e4edeb;
+  margin:20px 0;
+}
+
+.upload-result{
+  padding:10px;
+  background:#eaf6f3;
+  border-radius:10px;
+  font-size:10px;
+  color:#075c62;
+  word-break:break-all;
+  margin-top:8px;
+}
+
+.switch-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:11px;
+  margin:10px 0;
+}
+
+.switch-row input{
+  width:auto;
+}
+
+.color-preview{
+  width:28px;
+  height:28px;
+  border-radius:8px;
+  border:1px solid #ddd;
+}
+
+.dashboard-note{
+  background:linear-gradient(135deg,#e8f5f1,#f7fbfa);
+  border:1px solid #d5e8e3;
+  padding:14px;
+  border-radius:13px;
+  margin-bottom:15px;
+  font-size:11px;
+  line-height:1.9;
+}
+
+@media(max-width:1050px){
+  .cards{
+    grid-template-columns:repeat(3,1fr);
+  }
+
+  .grid-3{
+    grid-template-columns:1fr 1fr;
+  }
+}
+
+@media(max-width:700px){
+  .grid,
+  .grid-3{
+    grid-template-columns:1fr;
+  }
+
+  .cards{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .top{
+    min-height:65px;
+  }
+
+  .top h1{
+    font-size:13px;
+  }
+
+  .tabs{
+    overflow:auto;
+    flex-wrap:nowrap;
+    padding-bottom:4px;
+  }
+
+  .tab{
+    white-space:nowrap;
+  }
+
+  .toolbar{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .item-head{
+    flex-direction:column;
+  }
+}
+
+@media(max-width:450px){
+  .cards{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .login-card{
+    padding:23px;
+  }
+
+  .panel{
+    padding:14px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =========================
+     LOGIN
+========================= -->
+
+<div id="login" class="login">
+
+  <div class="login-card">
+
+    <h1>لوحة تحكم المركز</h1>
+
+    <p>
+      مركز دراسات السلام والتنمية – جامعة السلام
+    </p>
+
+    <form id="loginForm">
+
+      <div class="field">
+        <label>اسم المستخدم</label>
+        <input
+          id="username"
+          required
+          autocomplete="username"
+        >
+      </div>
+
+      <div class="field">
+        <label>كلمة المرور</label>
+        <input
+          id="password"
+          type="password"
+          required
+          autocomplete="current-password"
+        >
+      </div>
+
+      <button class="btn primary">
+        دخول لوحة التحكم
+      </button>
+
+      <div id="loginError" class="error"></div>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<!-- =========================
+     APPLICATION
+========================= -->
+
+<div id="app" class="app">
+
+<header class="top">
+
+  <div>
+    <h1>
+      لوحة تحكم مركز دراسات السلام والتنمية
+    </h1>
+
+    <small>
+      إدارة كاملة لمحتوى الموقع والملفات والصور
+    </small>
+  </div>
+
+  <button id="logout" class="btn logout">
+    تسجيل الخروج
+  </button>
+
+</header>
+
+
+<main class="wrap">
+
+
+<!-- =========================
+     STATISTICS
+========================= -->
+
+<div class="cards">
+
+  <div class="stat">
+    <b id="sNews">0</b>
+    <span>الأخبار</span>
+  </div>
+
+  <div class="stat">
+    <b id="sPrograms">0</b>
+    <span>البرامج</span>
+  </div>
+
+  <div class="stat">
+    <b id="sServices">0</b>
+    <span>الخدمات</span>
+  </div>
+
+  <div class="stat">
+    <b id="sResearch">0</b>
+    <span>البحوث</span>
+  </div>
+
+  <div class="stat">
+    <b id="sMedia">0</b>
+    <span>الوسائط</span>
+  </div>
+
+  <div class="stat">
+    <b id="sHero">0</b>
+    <span>صور الواجهة</span>
+  </div>
+
+</div>
+
+
+<!-- =========================
+     TABS
+========================= -->
+
+<div class="tabs">
+
+  <button class="btn tab active" data-tab="homepage">
+    🏠 الرئيسية
+  </button>
+
+  <button class="btn tab" data-tab="services">
+    🧩 الخدمات
+  </button>
+
+  <button class="btn tab" data-tab="stats">
+    📊 الإحصائيات
+  </button>
+
+  <button class="btn tab" data-tab="research">
+    📚 البحوث
+  </button>
+
+  <button class="btn tab" data-tab="programs">
+    🎓 البرامج
+  </button>
+
+  <button class="btn tab" data-tab="news">
+    📰 الأخبار
+  </button>
+
+  <button class="btn tab" data-tab="ann">
+    📢 الإعلانات
+  </button>
+
+  <button class="btn tab" data-tab="hero">
+    🖼️ الواجهة
+  </button>
+
+  <button class="btn tab" data-tab="media">
+    🗂️ الوسائط
+  </button>
+
+  <button class="btn tab" data-tab="pages">
+    📄 الصفحات
+  </button>
+
+  <button class="btn tab" data-tab="navigation">
+    🧭 القائمة
+  </button>
+
+  <button class="btn tab" data-tab="settings">
+    ⚙️ إعدادات المركز
+  </button>
+
+  <button class="btn tab" data-tab="account">
+    👤 الحساب
+  </button>
+
+</div>
+
+
+<!-- =========================
+     HOMEPAGE
+========================= -->
+
+<section id="sec-homepage" class="section active">
+
+  <div class="dashboard-note">
+    من هنا تستطيع التحكم في النصوص الأساسية التي تظهر في الواجهة الرئيسية للموقع.
+  </div>
+
+  <div class="panel">
+
+    <h2>محتوى الواجهة الرئيسية</h2>
+
+    <form id="homepageForm">
+
+      <div class="field">
+        <label>العنوان الصغير</label>
+        <input name="kicker">
+      </div>
+
+      <div class="field">
+        <label>العنوان الرئيسي</label>
+        <input name="title">
+      </div>
+
+      <div class="field">
+        <label>الوصف</label>
+        <textarea name="description"></textarea>
+      </div>
+
+      <div class="grid">
+
+        <div class="field">
+          <label>نص الزر</label>
+          <input name="buttonText">
+        </div>
+
+        <div class="field">
+          <label>رابط الزر</label>
+          <input name="buttonLink">
+        </div>
+
+      </div>
+
+      <div class="field">
+        <label>العبارة الختامية</label>
+        <input name="tagline">
+      </div>
+
+      <button class="btn primary">
+        حفظ الصفحة الرئيسية
+      </button>
+
+    </form>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     SERVICES
+========================= -->
+
+<section id="sec-services" class="section">
+
+  <div class="panel">
+
+    <div class="toolbar">
+
+      <h2>إدارة الخدمات</h2>
+
+      <button
+        class="btn primary"
+        onclick="openForm('services')"
+      >
+        + إضافة خدمة
+      </button>
+
+    </div>
+
+    <div id="list-services" class="list"></div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     STATS
+========================= -->
+
+<section id="sec-stats" class="section">
+
+  <div class="panel">
+
+    <div class="toolbar">
+
+      <h2>الإحصائيات والأرقام</h2>
+
+      <button
+        class="btn primary"
+        onclick="openForm('stats')"
+      >
+        + إضافة إحصائية
+      </button>
+
+    </div>
+
+    <div id="list-stats" class="list"></div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     RESEARCH
+========================= -->
+
+<section id="sec-research" class="section">
+
+  <div class="panel">
+
+    <div class="toolbar">
+
+      <h2>البحوث والدراسات</h2>
+
+      <button
+        class="btn primary"
+        onclick="openForm('research')"
+      >
+        + إضافة بحث
+      </button>
+
+    </div>
+
+    <div id="list-research" class="list"></div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     PROGRAMS
+========================= -->
+
+<section id="sec-programs" class="section">
+
+  <div class="panel">
+
+    <div class="toolbar">
+
+      <h2>البرامج</h2>
+
+      <button
+        class="btn primary"
+        onclick="openForm('programs')"
+      >
+        + إضافة برنامج
+      </button>
+
+    </div>
+
+    <div id="list-programs" class="list"></div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     NEWS
+========================= -->
+
+<section id="sec-news" class="section">
+
+  <div class="panel">
+
+    <div class="toolbar">
+
+      <h2>الأخبار</h2>
+
+      <button
+        class="btn primary"
+        onclick="openForm('news')"
+      >
+        + إضافة خبر
+      </button>
+
+    </div>
+
+    <div id="list-news" class="list"></div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     ANNOUNCEMENTS
+========================= -->
+
+<section id="sec-ann" class="section">
+
+  <div class="panel">
+
+    <div class="toolbar">
+
+      <h2>شريط الإعلانات المتحرك</h2>
+
+      <button
+        class="btn primary"
+        onclick="openForm('announcements')"
+      >
+        + إضافة إعلان
+      </button>
+
+    </div>
+
+    <div id="list-announcements" class="list"></div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     HERO
+========================= -->
+
+<section id="sec-hero" class="section">
+
+  <div class="panel">
+
+    <div class="toolbar">
+
+      <h2>صور الواجهة الرئيسية</h2>
+
+      <button
+        class="btn primary"
+        onclick="openForm('hero')"
+      >
+        + إضافة صورة
+      </button>
+
+    </div>
+
+    <div id="list-hero" class="list"></div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     MEDIA
+========================= -->
+
+<section id="sec-media" class="section">
+
+  <div class="panel">
+
+    <div class="toolbar">
+
+      <h2>مدير الوسائط والملفات</h2>
+
+      <button
+        class="btn primary"
+        onclick="openUpload()"
+      >
+        + رفع ملف
+      </button>
+
+    </div>
+
+    <div class="dashboard-note">
+      يمكنك رفع الصور وملفات PDF وWord وExcel وPowerPoint والفيديو والصوت.
+    </div>
+
+    <div id="list-media" class="list"></div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     PAGES
+========================= -->
+
+<section id="sec-pages" class="section">
+
+  <div class="panel">
+
+    <div class="toolbar">
+
+      <h2>الصفحات</h2>
+
+      <button
+        class="btn primary"
+        onclick="openForm('pages')"
+      >
+        + إضافة صفحة
+      </button>
+
+    </div>
+
+    <div id="list-pages" class="list"></div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     NAVIGATION
+========================= -->
+
+<section id="sec-navigation" class="section">
+
+  <div class="panel">
+
+    <div class="toolbar">
+
+      <h2>القائمة الرئيسية</h2>
+
+      <button
+        class="btn primary"
+        onclick="openForm('navigation')"
+      >
+        + إضافة عنصر
+      </button>
+
+    </div>
+
+    <div id="list-navigation" class="list"></div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     SETTINGS
+========================= -->
+
+<section id="sec-settings" class="section">
+
+  <div class="panel">
+
+    <h2>
+      إعدادات المركز
+    </h2>
+
+    <form id="settingsForm">
+
+      <div class="grid">
+
+        <div class="field">
+          <label>اسم المركز</label>
+          <input name="siteTitle">
+        </div>
+
+        <div class="field">
+          <label>الجهة</label>
+          <input name="subtitle">
+        </div>
+
+      </div>
+
+      <div class="field">
+        <label>عنوان قسم عن المركز</label>
+        <input name="aboutTitle">
+      </div>
+
+      <div class="field">
+        <label>الفقرة الأولى</label>
+        <textarea name="aboutText1"></textarea>
+      </div>
+
+      <div class="field">
+        <label>الفقرة الثانية</label>
+        <textarea name="aboutText2"></textarea>
+      </div>
+
+      <div class="grid">
+
+        <div class="field">
+          <label>الهاتف</label>
+          <input name="phone">
+        </div>
+
+        <div class="field">
+          <label>البريد الإلكتروني</label>
+          <input name="email">
+        </div>
+
+      </div>
+
+      <div class="field">
+        <label>العنوان</label>
+        <input name="address">
+      </div>
+
+      <div class="field">
+        <label>عبارة التذييل</label>
+        <input name="footerSlogan">
+      </div>
+
+      <div class="field">
+        <label>اسم/رابط الشعار</label>
+        <input name="logo">
+      </div>
+
+      <button class="btn primary">
+        حفظ إعدادات المركز
+      </button>
+
+    </form>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     ACCOUNT
+========================= -->
+
+<section id="sec-account" class="section">
+
+  <div class="panel">
+
+    <h2>بيانات حساب المدير</h2>
+
+    <div class="dashboard-note">
+      تغيير بيانات الدخول يحتاج إلى تفعيل واجهة إدارة الحساب في الخادم. سنقوم بهذه الخطوة بعد اختبار لوحة التحكم الجديدة.
+    </div>
+
+    <div class="field">
+      <label>اسم المستخدم الحالي</label>
+      <input
+        id="currentAdminUser"
+        readonly
+      >
+    </div>
+
+  </div>
+
+</section>
+
+
+</main>
+</div>
+
+
+<!-- =========================
+     MODAL
+========================= -->
+
+<div id="modal" class="modal">
+
+  <div class="modal-box">
+
+    <div class="modal-head">
+
+      <h3 id="modalTitle">
+        إضافة
+      </h3>
+
+      <button
+        class="close"
+        onclick="closeModal()"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <form id="itemForm"></form>
+
+  </div>
+
+</div>
+
+
+<!-- =========================
+     TOAST
+========================= -->
+
+<div id="toast" class="toast"></div>
+
+
 <script>
-let token=localStorage.getItem('peace_admin_token')||'';let data={};let editing=null;
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-function api(url,opt={}){opt.headers={...(opt.headers||{}),Authorization:'Bearer '+token};return fetch(url,opt).then(async r=>{const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'حدث خطأ');return j})}
-function toast(t){const x=$('#toast');x.textContent=t;x.style.display='block';setTimeout(()=>x.style.display='none',2200)}
-$('#loginForm').addEventListener('submit',async e=>{e.preventDefault();$('#loginError').textContent='';try{const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:$('#username').value,password:$('#password').value})});const j=await r.json();if(!r.ok)throw new Error(j.error);token=j.token;localStorage.setItem('peace_admin_token',token);showApp()}catch(err){$('#loginError').textContent=err.message}});
-$('#logout').onclick=async()=>{try{await api('/api/logout',{method:'POST'})}catch{} localStorage.removeItem('peace_admin_token');token='';location.reload()};
-async function showApp(){try{data=await api('/api/admin');$('#login').style.display='none';$('#app').style.display='block';renderAll()}catch{localStorage.removeItem('peace_admin_token');token='';}}
-$$('.tab').forEach(b=>b.onclick=()=>{$$('.tab').forEach(x=>x.classList.remove('active'));$$('.section').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#sec-'+b.dataset.tab).classList.add('active')});
-function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
-const labels={announcements:'الإعلانات',programs:'البرامج',news:'الأخبار',hero:'صور الواجهة',documents:'الملفات'};
-function renderAll(){['news','programs','announcements','hero','documents'].forEach(k=>renderList(k));$('#sNews').textContent=data.news.length;$('#sPrograms').textContent=data.programs.length;$('#sAnn').textContent=data.announcements.length;$('#sDocs').textContent=data.documents.length;$('#sHero').textContent=data.hero.length;for(const k of Object.keys(data.settings)){const el=$('#settingsForm [name="'+k+'"]');if(el)el.value=data.settings[k]||''}}
-function renderList(k){const el=$('#list-'+(k==='announcements'?'announcements':k));if(!el)return;const arr=data[k]||[];if(!arr.length){el.innerHTML='<div class="empty">لا توجد عناصر بعد.</div>';return}el.innerHTML=arr.map(x=>{let title=x.title||x.text||x.caption||x.name||'عنصر';let sub=x.text||x.source||x.url||'';let extra=x.date?`<small>${esc(x.date)}</small>`:'';let img=x.image||'';if(k==='hero')img=x.image;return `<div class="item"><div class="item-head"><div><h3>${esc(title)}</h3><p>${esc(sub)}</p>${extra}${img?`<img class="preview" src="${esc(img)}" onerror="this.style.display='none'">`:''}</div><div class="actions"><button class="btn light" onclick="openForm('${k}','${x.id}')">تعديل</button><button class="btn danger" onclick="removeItem('${k}','${x.id}')">حذف</button></div></div></div>`}).join('')}
-function fieldsFor(k,x={}){if(k==='announcements')return `<div class="field"><label>نص الإعلان</label><textarea name="text" required>${esc(x.text)}</textarea></div>`;if(k==='programs')return `<div class="field"><label>اسم البرنامج</label><input name="title" value="${esc(x.title)}" required></div><div class="field"><label>الوصف</label><textarea name="text" required>${esc(x.text)}</textarea></div>`;if(k==='news')return `<div class="field"><label>عنوان الخبر</label><input name="title" value="${esc(x.title)}" required></div><div class="field"><label>التاريخ</label><input name="date" type="date" value="${esc(x.date)}"></div><div class="field"><label>التفاصيل</label><textarea name="text">${esc(x.text)}</textarea></div><div class="field"><label>رابط صورة الخبر</label><input name="image" value="${esc(x.image)}" placeholder="https://..."></div>`;if(k==='hero')return `<div class="field"><label>رابط الصورة</label><input name="image" value="${esc(x.image)}" required placeholder="https://..."></div><div class="field"><label>وصف الصورة</label><input name="caption" value="${esc(x.caption)}"></div><div class="field"><label>المصدر والترخيص</label><input name="source" value="${esc(x.source)}"></div><div class="field"><label>رابط المصدر</label><input name="url" value="${esc(x.url)}"></div><p class="check">يمكنك استخدام رفع ملف لإضافة صورة من جهازك ثم نسخ الرابط الناتج.</p>`;if(k==='documents')return `<div class="field"><label>اسم الملف/المستند</label><input name="name" value="${esc(x.name)}" required></div><div class="field"><label>وصف مختصر</label><textarea name="description">${esc(x.description)}</textarea></div><div class="field"><label>رابط الملف</label><input name="url" value="${esc(x.url)}" required></div>`;return ''}
-function openForm(k,itemId=null){editing=itemId?{k,id:itemId}:null;const x=itemId?(data[k]||[]).find(a=>a.id===itemId)||{}:{};$('#modalTitle').textContent=(itemId?'تعديل ':'إضافة ')+labels[k];$('#itemForm').innerHTML=fieldsFor(k,x)+`<div class="field"><label>رفع ملف (اختياري)</label><input id="fileUpload" type="file"><div id="uploadStatus" class="check"></div></div><button class="btn primary">حفظ</button>`;$('#modal').classList.add('show');$('#itemForm').onsubmit=e=>saveItem(e,k,itemId)}
-function closeModal(){$('#modal').classList.remove('show');editing=null}
-async function saveItem(e,k,itemId){e.preventDefault();const fd=new FormData(e.target);const file=$('#fileUpload').files[0];if(file){const f=new FormData();f.append('file',file);try{const u=await api('/api/admin/upload',{method:'POST',body:f});$('#uploadStatus').textContent='تم رفع الملف: '+u.url;if(k==='hero')fd.set('image',u.url);if(k==='news')fd.set('image',u.url);if(k==='documents')fd.set('url',u.url)}catch(err){toast(err.message);return}}const body=Object.fromEntries(fd.entries());delete body.undefined;try{const r=await api('/api/admin/'+k+(itemId?'/'+itemId:''),{method:itemId?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});if(itemId){const i=data[k].findIndex(a=>a.id===itemId);data[k][i]=r}else data[k].unshift(r);closeModal();renderAll();toast('تم الحفظ بنجاح')}catch(err){toast(err.message)}}
-async function removeItem(k,id){if(!confirm('هل تريد حذف هذا العنصر؟'))return;try{await api('/api/admin/'+k+'/'+id,{method:'DELETE'});data[k]=data[k].filter(x=>x.id!==id);renderAll();toast('تم الحذف')}catch(err){toast(err.message)}}
-$('#settingsForm').onsubmit=async e=>{e.preventDefault();try{data.settings=await api('/api/admin/settings',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(e.target))) });toast('تم تحديث بيانات عن المركز')}catch(err){toast(err.message)}};
-$('#accountForm').onsubmit=async e=>{e.preventDefault();try{await api('/api/admin/account',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(e.target))) });e.target.reset();toast('تم تغيير بيانات الدخول. سجّل الدخول بالبيانات الجديدة.')}catch(err){toast(err.message)}};
-if(token)showApp();
-</script></body></html>
+
+let token =
+  localStorage.getItem(
+    'peace_admin_token'
+  ) || '';
+
+let data = {};
+
+let editing = null;
+
+
+/* =========================
+   Helpers
+========================= */
+
+const $ =
+  selector =>
+    document.querySelector(
+      selector
+    );
+
+const $$ =
+  selector =>
+    [...document.querySelectorAll(
+      selector
+    )];
+
+
+function esc(value){
+
+  return String(
+    value ?? ''
+  ).replace(
+    /[&<>"']/g,
+    char => ({
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#039;'
+    }[char])
+  );
+
+}
+
+
+function toast(message){
+
+  const box =
+    $('#toast');
+
+  box.textContent =
+    message;
+
+  box.style.display =
+    'block';
+
+  setTimeout(
+    () => {
+      box.style.display =
+        'none';
+    },
+    2500
+  );
+
+}
+
+
+/* =========================
+   API
+========================= */
+
+async function api(
+  url,
+  options={}
+){
+
+  options.headers = {
+    ...(options.headers || {}),
+    Authorization:
+      'Bearer ' + token
+  };
+
+  const response =
+    await fetch(
+      url,
+      options
+    );
+
+  const json =
+    await response
+      .json()
+      .catch(
+        () => ({})
+      );
+
+  if(
+    !response.ok
+  ){
+    throw new Error(
+      json.error ||
+      'حدث خطأ'
+    );
+  }
+
+  return json;
+
+}
+
+
+/* =========================
+   LOGIN
+========================= */
+
+$('#loginForm')
+  .addEventListener(
+    'submit',
+    async event => {
+
+      event.preventDefault();
+
+      $('#loginError')
+        .textContent = '';
+
+      try{
+
+        const response =
+          await fetch(
+            '/api/login',
+            {
+              method:'POST',
+
+              headers:{
+                'Content-Type':
+                  'application/json'
+              },
+
+              body:
+                JSON.stringify({
+                  username:
+                    $('#username').value,
+
+                  password:
+                    $('#password').value
+                })
+            }
+          );
+
+        const json =
+          await response
+            .json();
+
+        if(
+          !response.ok
+        ){
+          throw new Error(
+            json.error ||
+            'فشل تسجيل الدخول'
+          );
+        }
+
+        token =
+          json.token;
+
+        localStorage.setItem(
+          'peace_admin_token',
+          token
+        );
+
+        showApp();
+
+      }catch(error){
+
+        $('#loginError')
+          .textContent =
+            error.message;
+
+      }
+
+    }
+  );
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+$('#logout')
+  .onclick =
+  async () => {
+
+    try{
+
+      await api(
+        '/api/logout',
+        {
+          method:'POST'
+        }
+      );
+
+    }catch(error){}
+
+    localStorage.removeItem(
+      'peace_admin_token'
+    );
+
+    token = '';
+
+    location.reload();
+
+  };
+
+
+/* =========================
+   SHOW APP
+========================= */
+
+async function showApp(){
+
+  try{
+
+    const response =
+      await api(
+        '/api/admin'
+      );
+
+    data =
+      response.data ||
+      {};
+
+    $('#login')
+      .style.display =
+        'none';
+
+    $('#app')
+      .style.display =
+        'block';
+
+    renderAll();
+
+  }catch(error){
+
+    localStorage.removeItem(
+      'peace_admin_token'
+    );
+
+    token = '';
+
+  }
+
+}
+
+
+/* =========================
+   TABS
+========================= */
+
+$$('.tab')
+.forEach(
+  button => {
+
+    button.onclick =
+      () => {
+
+        $$('.tab')
+        .forEach(
+          x =>
+            x.classList.remove(
+              'active'
+            )
+        );
+
+        $$('.section')
+        .forEach(
+          x =>
+            x.classList.remove(
+              'active'
+            )
+        );
+
+        button.classList.add(
+          'active'
+        );
+
+        const section =
+          $('#sec-' +
+            button.dataset.tab);
+
+        if(section){
+          section.classList.add(
+            'active'
+          );
+        }
+
+      };
+
+  }
+);
+
+
+/* =========================
+   COLLECTIONS
+========================= */
+
+const collections = [
+  'news',
+  'programs',
+  'announcements',
+  'hero',
+  'documents',
+  'services',
+  'stats',
+  'research',
+  'media',
+  'pages',
+  'navigation'
+];
+
+
+const labels = {
+
+  announcements:
+    'الإعلانات',
+
+  programs:
+    'البرامج',
+
+  news:
+    'الأخبار',
+
+  hero:
+    'صور الواجهة',
+
+  documents:
+    'الملفات',
+
+  services:
+    'الخدمات',
+
+  stats:
+    'الإحصائيات',
+
+  research:
+    'البحوث والدراسات',
+
+  media:
+    'الوسائط',
+
+  pages:
+    'الصفحات',
+
+  navigation:
+    'القائمة'
+
+};
+
+
+/* =========================
+   GET COLLECTION
+========================= */
+
+function getCollection(
+  key
+){
+
+  if(
+    [
+      'services',
+      'stats',
+      'research',
+      'media',
+      'pages',
+      'navigation'
+    ].includes(key)
+  ){
+
+    return (
+      data.settings &&
+      data.settings.cms &&
+      data.settings.cms[key]
+    ) || [];
+
+  }
+
+  return data[key] || [];
+
+}
+
+
+/* =========================
+   SET COLLECTION
+========================= */
+
+function setCollection(
+  key,
+  value
+){
+
+  if(
+    [
+      'services',
+      'stats',
+      'research',
+      'media',
+      'pages',
+      'navigation'
+    ].includes(key)
+  ){
+
+    if(!data.settings)
+      data.settings = {};
+
+    if(!data.settings.cms)
+      data.settings.cms = {};
+
+    data.settings.cms[key] =
+      value;
+
+  }else{
+
+    data[key] =
+      value;
+
+  }
+
+}
+
+
+/* =========================
+   RENDER ALL
+========================= */
+
+function renderAll(){
+
+  collections
+    .forEach(
+      key =>
+        renderList(key)
+    );
+
+
+  $('#sNews')
+    .textContent =
+      getCollection(
+        'news'
+      ).length;
+
+  $('#sPrograms')
+    .textContent =
+      getCollection(
+        'programs'
+      ).length;
+
+  $('#sServices')
+    .textContent =
+      getCollection(
+        'services'
+      ).length;
+
+  $('#sResearch')
+    .textContent =
+      getCollection(
+        'research'
+      ).length;
+
+  $('#sMedia')
+    .textContent =
+      getCollection(
+        'media'
+      ).length;
+
+  $('#sHero')
+    .textContent =
+      getCollection(
+        'hero'
+      ).length;
+
+
+  fillSettings();
+
+  fillHomepage();
+
+  if(
+    data.admin &&
+    data.admin.username
+  ){
+
+    $('#currentAdminUser')
+      .value =
+        data.admin.username;
+
+  }
+
+}
+
+
+/* =========================
+   SETTINGS
+========================= */
+
+function fillSettings(){
+
+  const settings =
+    data.settings || {};
+
+  $$('#settingsForm [name]')
+  .forEach(
+    input => {
+
+      const name =
+        input.name;
+
+      input.value =
+        settings[name] ||
+        '';
+
+    }
+  );
+
+}
+
+
+/* =========================
+   HOMEPAGE
+========================= */
+
+function fillHomepage(){
+
+  const homepage =
+    (
+      data.settings &&
+      data.settings.cms &&
+      data.settings.cms.homepage
+    ) || {};
+
+  $$('#homepageForm [name]')
+  .forEach(
+    input => {
+
+      input.value =
+        homepage[input.name] ||
+        '';
+
+    }
+  );
+
+}
+
+
+/* =========================
+   RENDER LIST
+========================= */
+
+function renderList(
+  key
+){
+
+  const container =
+    $('#list-' +
+      key);
+
+  if(!container)
+    return;
+
+  const items =
+    getCollection(
+      key
+    );
+
+  if(
+    !items.length
+  ){
+
+    container.innerHTML =
+      '<div class="empty">لا توجد عناصر بعد.</div>';
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    items
+      .map(
+        item =>
+          renderItem(
+            key,
+            item
+          )
+      )
+      .join('');
+
+}
+
+
+/* =========================
+   RENDER ITEM
+========================= */
+
+function renderItem(
+  key,
+  item
+){
+
+  let title =
+    item.title ||
+    item.name ||
+    item.label ||
+    item.text ||
+    item.caption ||
+    'عنصر';
+
+  let description =
+    item.text ||
+    item.description ||
+    item.url ||
+    item.link ||
+    '';
+
+  let image =
+    item.image ||
+    '';
+
+
+  let meta = '';
+
+
+  if(
+    item.number
+  ){
+
+    meta +=
+      `<span class="badge">
+        الرقم: ${esc(item.number)}
+      </span>`;
+
+  }
+
+
+  if(
+    item.color
+  ){
+
+    meta +=
+      `<span class="badge">
+        اللون: ${esc(item.color)}
+      </span>`;
+
+  }
+
+
+  if(
+    item.order !== undefined
+  ){
+
+    meta +=
+      `<span class="badge">
+        الترتيب: ${esc(item.order)}
+      </span>`;
+
+  }
+
+
+  if(
+    item.visible === false
+  ){
+
+    meta +=
+      `<span class="badge">
+        مخفي
+      </span>`;
+
+  }
+
+
+  let mediaPreview = '';
+
+  if(image){
+
+    mediaPreview =
+      `<img
+        class="preview"
+        src="${esc(image)}"
+        onerror="this.style.display='none'"
+      >`;
+
+  }
+
+
+  if(
+    key === 'media' &&
+    item.type &&
+    item.type.startsWith(
+      'image/'
+    )
+  ){
+
+    mediaPreview =
+      `<img
+        class="preview"
+        src="${esc(item.url)}"
+        onerror="this.style.display='none'"
+      >`;
+
+  }
+
+
+  return `
+
+    <div class="item">
+
+      <div class="item-head">
+
+        <div>
+
+          <h3>
+            ${esc(title)}
+          </h3>
+
+          <p>
+            ${esc(description)}
+          </p>
+
+          ${
+            item.date
+              ? `<p>
+                   التاريخ:
+                   ${esc(item.date)}
+                 </p>`
+              : ''
+          }
+
+          <div class="item-meta">
+            ${meta}
+          </div>
+
+          ${mediaPreview}
+
+        </div>
+
+        <div class="actions">
+
+          <button
+            class="btn light"
+            onclick="openForm('${key}','${esc(item.id)}')"
+          >
+            تعديل
+          </button>
+
+          <button
+            class="btn danger"
+            onclick="removeItem('${key}','${esc(item.id)}')"
+          >
+            حذف
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+
+/* =========================
+   FORM FIELDS
+========================= */
+
+function fieldsFor(
+  key,
+  item={}
+){
+
+  if(
+    key === 'announcements'
+  ){
+
+    return `
+
+      <div class="field">
+
+        <label>
+          نص الإعلان
+        </label>
+
+        <textarea
+          name="text"
+          required
+        >${esc(item.text)}</textarea>
+
+      </div>
+
+    `;
+
+  }
+
+
+  if(
+    key === 'programs'
+  ){
+
+    return `
+
+      <div class="field">
+
+        <label>
+          اسم البرنامج
+        </label>
+
+        <input
+          name="title"
+          value="${esc(item.title)}"
+          required
+        >
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          الوصف
+        </label>
+
+        <textarea
+          name="text"
+        >${esc(item.text)}</textarea>
+
+      </div>
+
+    `;
+
+  }
+
+
+  if(
+    key === 'news'
+  ){
+
+    return `
+
+      <div class="field">
+
+        <label>
+          عنوان الخبر
+        </label>
+
+        <input
+          name="title"
+          value="${esc(item.title)}"
+          required
+        >
+
+      </div>
+
+      <div class="grid">
+
+        <div class="field">
+
+          <label>
+            التاريخ
+          </label>
+
+          <input
+            name="date"
+            type="date"
+            value="${esc(item.date)}"
+          >
+
+        </div>
+
+        <div class="field">
+
+          <label>
+            رابط الصورة
+          </label>
+
+          <input
+            name="image"
+            value="${esc(item.image)}"
+          >
+
+        </div>
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          تفاصيل الخبر
+        </label>
+
+        <textarea
+          name="text"
+        >${esc(item.text)}</textarea>
+
+      </div>
+
+    `;
+
+  }
+
+
+  if(
+    key === 'hero'
+  ){
+
+    return `
+
+      <div class="field">
+
+        <label>
+          رابط الصورة
+        </label>
+
+        <input
+          name="image"
+          value="${esc(item.image)}"
+          required
+        >
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          وصف الصورة
+        </label>
+
+        <input
+          name="caption"
+          value="${esc(item.caption)}"
+        >
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          المصدر
+        </label>
+
+        <input
+          name="source"
+          value="${esc(item.source)}"
+        >
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          رابط المصدر
+        </label>
+
+        <input
+          name="url"
+          value="${esc(item.url)}"
+        >
+
+      </div>
+
+    `;
+
+  }
+
+
+  if(
+    key === 'documents'
+  ){
+
+    return `
+
+      <div class="field">
+
+        <label>
+          اسم الملف
+        </label>
+
+        <input
+          name="name"
+          value="${esc(item.name)}"
+          required
+        >
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          الوصف
+        </label>
+
+        <textarea
+          name="description"
+        >${esc(item.description)}</textarea>
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          رابط الملف
+        </label>
+
+        <input
+          name="url"
+          value="${esc(item.url)}"
+        >
+
+      </div>
+
+    `;
+
+  }
+
+
+  if(
+    key === 'services'
+  ){
+
+    return `
+
+      <div class="grid">
+
+        <div class="field">
+
+          <label>
+            اسم الخدمة
+          </label>
+
+          <input
+            name="title"
+            value="${esc(item.title)}"
+            required
+          >
+
+        </div>
+
+        <div class="field">
+
+          <label>
+            الأيقونة
+          </label>
+
+          <input
+            name="icon"
+            value="${esc(item.icon)}"
+            placeholder="🔬"
+          >
+
+        </div>
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          وصف الخدمة
+        </label>
+
+        <textarea
+          name="text"
+        >${esc(item.text)}</textarea>
+
+      </div>
+
+      <div class="grid">
+
+        <div class="field">
+
+          <label>
+            اللون
+          </label>
+
+          <select name="color">
+
+            <option value="blue"
+              ${item.color==='blue'?'selected':''}>
+              أزرق
+            </option>
+
+            <option value="gold"
+              ${item.color==='gold'?'selected':''}>
+              ذهبي
+            </option>
+
+            <option value="green"
+              ${item.color==='green'?'selected':''}>
+              أخضر
+            </option>
+
+            <option value="purple"
+              ${item.color==='purple'?'selected':''}>
+              بنفسجي
+            </option>
+
+          </select>
+
+        </div>
+
+        <div class="field">
+
+          <label>
+            الترتيب
+          </label>
+
+          <input
+            name="order"
+            type="number"
+            value="${esc(item.order || 1)}"
+          >
+
+        </div>
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          الصورة
+        </label>
+
+        <input
+          name="image"
+          value="${esc(item.image)}"
+        >
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          الرابط
+        </label>
+
+        <input
+          name="link"
+          value="${esc(item.link)}"
+        >
+
+      </div>
+
+      <label class="switch-row">
+
+        <input
+          type="checkbox"
+          name="visible"
+          value="true"
+          ${item.visible !== false ? 'checked' : ''}
+        >
+
+        إظهار الخدمة في الموقع
+
+      </label>
+
+    `;
+
+  }
+
+
+  if(
+    key === 'stats'
+  ){
+
+    return `
+
+      <div class="grid">
+
+        <div class="field">
+
+          <label>
+            الرقم
+          </label>
+
+          <input
+            name="number"
+            value="${esc(item.number)}"
+            required
+          >
+
+        </div>
+
+        <div class="field">
+
+          <label>
+            العنوان
+          </label>
+
+          <input
+            name="label"
+            value="${esc(item.label)}"
+            required
+          >
+
+        </div>
+
+      </div>
+
+      <div class="grid">
+
+        <div class="field">
+
+          <label>
+            الأيقونة
+          </label>
+
+          <input
+            name="icon"
+            value="${esc(item.icon)}"
+          >
+
+        </div>
+
+        <div class="field">
+
+          <label>
+            الترتيب
+          </label>
+
+          <input
+            name="order"
+            type="number"
+            value="${esc(item.order || 1)}"
+          >
+
+        </div>
+
+      </div>
+
+      <label class="switch-row">
+
+        <input
+          type="checkbox"
+          name="visible"
+          value="true"
+          ${item.visible !== false ? 'checked' : ''}
+        >
+
+        إظهار الإحصائية
+
+      </label>
+
+    `;
+
+  }
+
+
+  if(
+    key === 'research'
+  ){
+
+    return `
+
+      <div class="field">
+
+        <label>
+          عنوان البحث
+        </label>
+
+        <input
+          name="title"
+          value="${esc(item.title)}"
+          required
+        >
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          ملخص البحث
+        </label>
+
+        <textarea
+          name="description"
+        >${esc(item.description || item.text)}</textarea>
+
+      </div>
+
+      <div class="grid">
+
+        <div class="field">
+
+          <label>
+            التاريخ
+          </label>
+
+          <input
+            name="date"
+            type="date"
+            value="${esc(item.date)}"
+          >
+
+        </div>
+
+        <div class="field">
+
+          <label>
+            رابط الملف
+          </label>
+
+          <input
+            name="file"
+            value="${esc(item.file)}"
+          >
+
+        </div>
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          رابط الصورة
+        </label>
+
+        <input
+          name="image"
+          value="${esc(item.image)}"
+        >
+
+      </div>
+
+      <label class="switch-row">
+
+        <input
+          type="checkbox"
+          name="visible"
+          value="true"
+          ${item.visible !== false ? 'checked' : ''}
+        >
+
+        نشر البحث في الموقع
+
+      </label>
+
+    `;
+
+  }
+
+
+  if(
+    key === 'pages'
+  ){
+
+    return `
+
+      <div class="field">
+
+        <label>
+          عنوان الصفحة
+        </label>
+
+        <input
+          name="title"
+          value="${esc(item.title)}"
+          required
+        >
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          رابط الصفحة
+        </label>
+
+        <input
+          name="slug"
+          value="${esc(item.slug)}"
+          placeholder="about-center"
+        >
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          محتوى الصفحة
+        </label>
+
+        <textarea
+          name="content"
+        >${esc(item.content)}</textarea>
+
+      </div>
+
+      <label class="switch-row">
+
+        <input
+          type="checkbox"
+          name="visible"
+          value="true"
+          ${item.visible !== false ? 'checked' : ''}
+        >
+
+        إظهار الصفحة
+
+      </label>
+
+    `;
+
+  }
+
+
+  if(
+    key === 'navigation'
+  ){
+
+    return `
+
+      <div class="grid">
+
+        <div class="field">
+
+          <label>
+            اسم العنصر
+          </label>
+
+          <input
+            name="title"
+            value="${esc(item.title)}"
+            required
+          >
+
+        </div>
+
+        <div class="field">
+
+          <label>
+            الرابط
+          </label>
+
+          <input
+            name="url"
+            value="${esc(item.url)}"
+            required
+          >
+
+        </div>
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          الترتيب
+        </label>
+
+        <input
+          name="order"
+          type="number"
+          value="${esc(item.order || 1)}"
+        >
+
+      </div>
+
+      <label class="switch-row">
+
+        <input
+          type="checkbox"
+          name="visible"
+          value="true"
+          ${item.visible !== false ? 'checked' : ''}
+        >
+
+        إظهار العنصر في القائمة
+
+      </label>
+
+    `;
+
+  }
+
+
+  return '';
+
+}
+
+
+/* =========================
+   OPEN FORM
+========================= */
+
+function openForm(
+  key,
+  itemId=null
+){
+
+  editing =
+    itemId
+      ? {
+          key,
+          id:itemId
+        }
+      : null;
+
+
+  const item =
+    itemId
+      ? getCollection(
+          key
+        ).find(
+          x =>
+            String(x.id) ===
+            String(itemId)
+        ) || {}
+      : {};
+
+
+  $('#modalTitle')
+    .textContent =
+      (
+        itemId
+          ? 'تعديل '
+          : 'إضافة '
+      ) +
+      labels[key];
+
+
+  $('#itemForm')
+    .innerHTML =
+
+      fieldsFor(
+        key,
+        item
+      ) +
+
+      `
+
+      <div class="file-box">
+
+        <div class="field">
+
+          <label>
+            رفع ملف أو صورة اختياري
+          </label>
+
+          <input
+            id="fileUpload"
+            type="file"
+            accept="
+              image/*,
+              application/pdf,
+              .doc,
+              .docx,
+              .xls,
+              .xlsx,
+              .ppt,
+              .pptx,
+              video/*,
+              audio/*
+            "
+          >
+
+        </div>
+
+        <div
+          id="uploadStatus"
+          class="check"
+        ></div>
+
+      </div>
+
+      <br>
+
+      <button
+        class="btn primary"
+        type="submit"
+      >
+        حفظ
+      </button>
+
+      `;
+
+
+  $('#modal')
+    .classList.add(
+      'show'
+    );
+
+
+  $('#itemForm')
+    .onsubmit =
+      event =>
+        saveItem(
+          event,
+          key,
+          itemId
+        );
+
+}
+
+
+/* =========================
+   CLOSE MODAL
+========================= */
+
+function closeModal(){
+
+  $('#modal')
+    .classList.remove(
+      'show'
+    );
+
+  editing = null;
+
+}
+
+
+/* =========================
+   UPLOAD
+========================= */
+
+async function uploadFile(){
+
+  const file =
+    $('#fileUpload');
+
+  if(
+    !file ||
+    !file.files ||
+    !file.files[0]
+  ){
+
+    return null;
+
+  }
+
+
+  const form =
+    new FormData();
+
+  form.append(
+    'file',
+    file.files[0]
+  );
+
+
+  $('#uploadStatus')
+    .textContent =
+      'جاري رفع الملف...';
+
+
+  const result =
+    await api(
+      '/api/admin/upload',
+      {
+        method:'POST',
+        body:form
+      }
+    );
+
+
+  const uploaded =
+    result.data;
+
+
+  if(
+    uploaded &&
+    uploaded.url
+  ){
+
+    $('#uploadStatus')
+      .innerHTML =
+        'تم رفع الملف بنجاح:<br>' +
+        `<span class="upload-result">
+          ${esc(uploaded.url)}
+        </span>`;
+
+  }
+
+
+  return uploaded;
+
+}
+
+
+/* =========================
+   SAVE ITEM
+========================= */
+
+async function saveItem(
+  event,
+  key,
+  itemId
+){
+
+  event.preventDefault();
+
+
+  try{
+
+    const form =
+      new FormData(
+        event.target
+      );
+
+
+    const uploaded =
+      await uploadFile();
+
+
+    const body =
+      Object.fromEntries(
+        form.entries()
+      );
+
+
+    /* checkbox */
+
+    if(
+      event.target.querySelector(
+        '[name="visible"]'
+      )
+    ){
+
+      body.visible =
+        event.target.querySelector(
+          '[name="visible"]'
+        ).checked;
+
+    }
+
+
+    /* uploaded file */
+
+    if(
+      uploaded &&
+      uploaded.url
+    ){
+
+      if(
+        key === 'hero' ||
+        key === 'news' ||
+        key === 'services'
+      ){
+
+        body.image =
+          uploaded.url;
+
+      }
+
+
+      if(
+        key === 'documents'
+      ){
+
+        body.url =
+          uploaded.url;
+
+      }
+
+
+      if(
+        key === 'research'
+      ){
+
+        body.file =
+          uploaded.url;
+
+      }
+
+    }
+
+
+    let endpoint =
+      '/api/admin/' +
+      key;
+
+
+    let method =
+      itemId
+        ? 'PUT'
+        : 'POST';
+
+
+    if(itemId){
+
+      endpoint +=
+        '/' +
+        encodeURIComponent(
+          itemId
+        );
+
+    }
+
+
+    const result =
+      await api(
+        endpoint,
+        {
+          method,
+
+          headers:{
+            'Content-Type':
+              'application/json'
+          },
+
+          body:
+            JSON.stringify(
+              body
+            )
+        }
+      );
+
+
+    const saved =
+      result.data;
+
+
+    const items =
+      getCollection(
+        key
+      );
+
+
+    if(itemId){
+
+      const index =
+        items.findIndex(
+          x =>
+            String(x.id) ===
+            String(itemId)
+        );
+
+      if(
+        index !== -1
+      ){
+
+        items[index] =
+          saved;
+
+      }
+
+    }else{
+
+      items.unshift(
+        saved
+      );
+
+    }
+
+
+    setCollection(
+      key,
+      items
+    );
+
+
+    closeModal();
+
+    renderAll();
+
+    toast(
+      'تم الحفظ بنجاح'
+    );
+
+
+  }catch(error){
+
+    toast(
+      error.message
+    );
+
+  }
+
+}
+
+
+/* =========================
+   DELETE
+========================= */
+
+async function removeItem(
+  key,
+  id
+){
+
+  if(
+    !confirm(
+      'هل تريد حذف هذا العنصر؟'
+    )
+  ){
+
+    return;
+
+  }
+
+
+  try{
+
+    await api(
+      '/api/admin/' +
+      key +
+      '/' +
+      encodeURIComponent(
+        id
+      ),
+      {
+        method:'DELETE'
+      }
+    );
+
+
+    const items =
+      getCollection(
+        key
+      );
+
+
+    setCollection(
+      key,
+      items.filter(
+        item =>
+          String(item.id) !==
+          String(id)
+      )
+    );
+
+
+    renderAll();
+
+    toast(
+      'تم الحذف بنجاح'
+    );
+
+
+  }catch(error){
+
+    toast(
+      error.message
+    );
+
+  }
+
+}
+
+
+/* =========================
+   MEDIA UPLOAD WINDOW
+========================= */
+
+function openUpload(){
+
+  $('#modalTitle')
+    .textContent =
+      'رفع ملف جديد';
+
+
+  $('#itemForm')
+    .innerHTML = `
+
+      <div class="dashboard-note">
+
+        يمكنك رفع:
+        صور، PDF، Word، Excel،
+        PowerPoint، فيديو أو صوت.
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          اختر الملف
+        </label>
+
+        <input
+          id="fileUpload"
+          type="file"
+          required
+          accept="
+            image/*,
+            application/pdf,
+            .doc,
+            .docx,
+            .xls,
+            .xlsx,
+            .ppt,
+            .pptx,
+            video/*,
+            audio/*
+          "
+        >
+
+      </div>
+
+      <div
+        id="uploadStatus"
+        class="check"
+      ></div>
+
+      <br>
+
+      <button
+        class="btn primary"
+        type="submit"
+      >
+        رفع الملف
+      </button>
+
+    `;
+
+
+  $('#modal')
+    .classList.add(
+      'show'
+    );
+
+
+  $('#itemForm')
+    .onsubmit =
+      async event => {
+
+        event.preventDefault();
+
+        try{
+
+          const uploaded =
+            await uploadFile();
+
+          if(
+            uploaded
+          ){
+
+            const media =
+              getCollection(
+                'media'
+              );
+
+            media.unshift(
+              uploaded
+            );
+
+            setCollection(
+              'media',
+              media
+            );
+
+            renderAll();
+
+            toast(
+              'تم رفع الملف بنجاح'
+            );
+
+            closeModal();
+
+          }
+
+        }catch(error){
+
+          toast(
+            error.message
+          );
+
+        }
+
+      };
+
+}
+
+
+/* =========================
+   HOMEPAGE SAVE
+========================= */
+
+$('#homepageForm')
+  .onsubmit =
+  async event => {
+
+    event.preventDefault();
+
+
+    try{
+
+      const body =
+        Object.fromEntries(
+          new FormData(
+            event.target
+          )
+        );
+
+
+      const result =
+        await api(
+          '/api/homepage',
+          {
+            method:'PUT',
+
+            headers:{
+              'Content-Type':
+                'application/json'
+            },
+
+            body:
+              JSON.stringify(
+                body
+              )
+          }
+        );
+
+
+      if(
+        !data.settings
+      ){
+
+        data.settings = {};
+
+      }
+
+
+      if(
+        !data.settings.cms
+      ){
+
+        data.settings.cms = {};
+
+      }
+
+
+      data.settings.cms.homepage =
+        result.data;
+
+
+      toast(
+        'تم حفظ الصفحة الرئيسية'
+      );
+
+
+    }catch(error){
+
+      toast(
+        error.message
+      );
+
+    }
+
+  };
+
+
+/* =========================
+   SETTINGS SAVE
+========================= */
+
+$('#settingsForm')
+  .onsubmit =
+  async event => {
+
+    event.preventDefault();
+
+
+    try{
+
+      const body =
+        Object.fromEntries(
+          new FormData(
+            event.target
+          )
+        );
+
+
+      const result =
+        await api(
+          '/api/settings',
+          {
+            method:'PUT',
+
+            headers:{
+              'Content-Type':
+                'application/json'
+            },
+
+            body:
+              JSON.stringify(
+                body
+              )
+          }
+        );
+
+
+      data.settings =
+        result.data;
+
+
+      toast(
+        'تم حفظ إعدادات المركز'
+      );
+
+
+    }catch(error){
+
+      toast(
+        error.message
+      );
+
+    }
+
+  };
+
+
+/* =========================
+   MODAL CLICK OUTSIDE
+========================= */
+
+$('#modal')
+  .addEventListener(
+    'click',
+    event => {
+
+      if(
+        event.target ===
+        $('#modal')
+      ){
+
+        closeModal();
+
+      }
+
+    }
+  );
+
+
+/* =========================
+   START
+========================= */
+
+if(token){
+
+  showApp();
+
+}
+
+</script>
+
+</body>
+</html>

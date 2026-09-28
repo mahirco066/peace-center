@@ -6,7 +6,6 @@ const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
-
 const PORT = process.env.PORT || 10000;
 const ROOT = __dirname;
 
@@ -23,17 +22,12 @@ function findPublicDir() {
   ];
 
   for (const dir of candidates) {
-    if (fs.existsSync(path.join(dir, 'index.html'))) {
-      return dir;
-    }
+    if (fs.existsSync(path.join(dir, 'index.html'))) return dir;
   }
 
   function scan(dir, depth) {
     if (depth < 0) return null;
-
-    if (fs.existsSync(path.join(dir, 'index.html'))) {
-      return dir;
-    }
+    if (fs.existsSync(path.join(dir, 'index.html'))) return dir;
 
     let entries = [];
 
@@ -120,7 +114,7 @@ const supabase = USE_SUPABASE
   : null;
 
 /* =========================================================
-   البيانات الأولية للموقع
+   البيانات الأولية
 ========================================================= */
 
 const initial = {
@@ -693,15 +687,16 @@ function hashPassword(
     .randomBytes(16)
     .toString('hex')
 ) {
-  const hash = crypto
-    .scryptSync(
-      password,
-      salt,
-      64
-    )
-    .toString('hex');
+  const hash =
+    crypto
+      .scryptSync(
+        password,
+        salt,
+        64
+      )
+      .toString('hex');
 
-  return salt + ':' + hash;
+  return `${salt}:${hash}`;
 }
 
 function verifyPassword(
@@ -709,37 +704,56 @@ function verifyPassword(
   stored
 ) {
   const parts =
-    String(stored || '').split(':');
+    String(
+      stored || ''
+    ).split(':');
 
-  const salt = parts[0];
-  const key = parts[1];
+  const salt =
+    parts[0];
 
-  if (!salt || !key) {
+  const key =
+    parts[1];
+
+  if (
+    !salt ||
+    !key
+  ) {
     return false;
   }
 
-  const derived = crypto
-    .scryptSync(
-      password,
-      salt,
-      64
-    )
-    .toString('hex');
+  const derived =
+    crypto
+      .scryptSync(
+        password,
+        salt,
+        64
+      )
+      .toString('hex');
 
   const a =
-    Buffer.from(key, 'hex');
+    Buffer.from(
+      key,
+      'hex'
+    );
 
   const b =
-    Buffer.from(derived, 'hex');
+    Buffer.from(
+      derived,
+      'hex'
+    );
 
   return (
-    a.length === b.length &&
-    crypto.timingSafeEqual(a, b)
+    a.length ===
+      b.length &&
+    crypto.timingSafeEqual(
+      a,
+      b
+    )
   );
 }
 
 /* =========================================================
-   ضمان وجود بنية CMS
+   ضمان وجود CMS
 ========================================================= */
 
 function ensureCms(db) {
@@ -780,17 +794,14 @@ function ensureCms(db) {
 
   if (
     !cms.homepage ||
-    typeof cms.homepage !== 'object'
+    typeof cms.homepage !== 'object' ||
+    Array.isArray(cms.homepage)
   ) {
     cms.homepage = {};
   }
 
   return db;
 }
-
-/* =========================================================
-   دمج البيانات الأولية بدون حذف البيانات الحالية
-========================================================= */
 
 function mergeSeedArray(
   existing,
@@ -804,19 +815,12 @@ function mergeSeedArray(
     return existing;
   }
 
-  /*
-   * إذا كان القسم فارغًا تمامًا،
-   * نضع البيانات الأولية.
-   */
   if (existing.length === 0) {
     return JSON.parse(
       JSON.stringify(seed)
     );
   }
 
-  /*
-   * إذا كان فيه بيانات، لا نحذفها.
-   */
   return existing;
 }
 
@@ -848,7 +852,9 @@ function mergeSeedObject(
     ) {
       result[key] =
         JSON.parse(
-          JSON.stringify(seed[key])
+          JSON.stringify(
+            seed[key]
+          )
         );
     }
   }
@@ -937,7 +943,9 @@ function normalizeDatabase(db) {
     );
 
   db.documents =
-    Array.isArray(db.documents)
+    Array.isArray(
+      db.documents
+    )
       ? db.documents
       : [];
 
@@ -990,7 +998,9 @@ function loadLocal() {
     );
 
   db =
-    normalizeDatabase(db);
+    normalizeDatabase(
+      db
+    );
 
   saveLocal(db);
 
@@ -999,7 +1009,9 @@ function loadLocal() {
 
 function saveLocal(db) {
   db =
-    normalizeDatabase(db);
+    normalizeDatabase(
+      db
+    );
 
   fs.writeFileSync(
     DB_FILE,
@@ -1031,9 +1043,6 @@ async function getSupabaseData() {
     throw error;
   }
 
-  /*
-   * إذا لم يوجد السجل نهائيًا
-   */
   if (!data) {
     const seed =
       cloneInitial();
@@ -1044,6 +1053,7 @@ async function getSupabaseData() {
       .from('site_data')
       .insert({
         id: 1,
+
         settings:
           seed.settings,
 
@@ -1073,9 +1083,6 @@ async function getSupabaseData() {
     return seed;
   }
 
-  /*
-   * نقرأ البيانات الحالية
-   */
   let db = {
     settings:
       data.settings || {},
@@ -1116,33 +1123,40 @@ async function getSupabaseData() {
         : []
   };
 
-  /*
-   * أهم خطوة:
-   * تهيئة الـCMS الموجود داخل settings.cms
-   */
   const before =
-    JSON.stringify(db);
+    JSON.stringify(
+      db
+    );
 
   db =
-    normalizeDatabase(db);
+    normalizeDatabase(
+      db
+    );
 
   const after =
-    JSON.stringify(db);
+    JSON.stringify(
+      db
+    );
 
-  /*
-   * إذا تمت إضافة بيانات جديدة،
-   * نحفظها في Supabase.
-   */
-  if (before !== after) {
-    await saveSupabaseData(db);
+  if (
+    before !==
+    after
+  ) {
+    await saveSupabaseData(
+      db
+    );
   }
 
   return db;
 }
 
-async function saveSupabaseData(db) {
+async function saveSupabaseData(
+  db
+) {
   db =
-    normalizeDatabase(db);
+    normalizeDatabase(
+      db
+    );
 
   const {
     error
@@ -1187,12 +1201,18 @@ async function getData() {
   return loadLocal();
 }
 
-async function saveData(db) {
+async function saveData(
+  db
+) {
   if (USE_SUPABASE) {
-    return saveSupabaseData(db);
+    return saveSupabaseData(
+      db
+    );
   }
 
-  return saveLocal(db);
+  return saveLocal(
+    db
+  );
 }
 
 /* =========================================================
@@ -1237,7 +1257,9 @@ async function ensureAdmin() {
           username,
 
         password_hash:
-          hashPassword(password)
+          hashPassword(
+            password
+          )
       });
 
     if (insertError) {
@@ -1290,12 +1312,11 @@ app.use(
 );
 
 app.use(
-  express.static(PUBLIC)
+  express.static(
+    PUBLIC
+  )
 );
 
-/*
- * ملفات الرفع المحلية
- */
 const LOCAL_UPLOADS =
   path.join(
     ROOT,
@@ -1330,43 +1351,41 @@ app.get(
       );
 
     if (
-      fs.existsSync(indexPath)
+      fs.existsSync(
+        indexPath
+      )
     ) {
       return res.sendFile(
         indexPath
       );
     }
 
-    res.status(500).send(`
-      <html lang="ar" dir="rtl">
-      <meta charset="utf-8">
+    res
+      .status(500)
+      .send(`
+        <html lang="ar" dir="rtl">
+          <meta charset="utf-8">
+          <title>مشكلة في ملفات الموقع</title>
 
-      <title>
-        مشكلة في ملفات الموقع
-      </title>
+          <body style="font-family:Arial;padding:40px">
 
-      <body style="
-        font-family:Arial;
-        padding:40px;
-      ">
+            <h2>
+              ملف الصفحة الرئيسية غير موجود
+            </h2>
 
-      <h2>
-        ملف الصفحة الرئيسية غير موجود
-      </h2>
+            <p>
+              لم يجد الخادم ملف
+              <b>index.html</b>.
+            </p>
 
-      <p>
-        لم يجد الخادم ملف
-        <b>index.html</b>.
-      </p>
+            <p>
+              المجلد:
+              <code>${PUBLIC}</code>
+            </p>
 
-      <p>
-        المجلد:
-        <code>${PUBLIC}</code>
-      </p>
-
-      </body>
-      </html>
-    `);
+          </body>
+        </html>
+      `);
   }
 );
 
@@ -1393,7 +1412,10 @@ function createSession(
 
       expires:
         Date.now() +
-        8 * 60 * 60 * 1000
+        8 *
+          60 *
+          60 *
+          1000
     }
   );
 
@@ -1414,7 +1436,9 @@ function auth(
 
   const session =
     token &&
-    sessions.get(token);
+    sessions.get(
+      token
+    );
 
   if (
     !session ||
@@ -1434,55 +1458,70 @@ function auth(
 
 /* =========================================================
    تسجيل الدخول
+   يقبل /api/login و /api/admin/login
 ========================================================= */
+
+async function loginHandler(
+  req,
+  res,
+  next
+) {
+  try {
+    const {
+      username,
+      password
+    } = req.body || {};
+
+    const admin =
+      await getAdmin();
+
+    const valid =
+      username ===
+        admin.username &&
+      verifyPassword(
+        password || '',
+        admin.password_hash ||
+          admin.passwordHash
+      );
+
+    if (!valid) {
+      return res
+        .status(401)
+        .json({
+          error:
+            'اسم المستخدم أو كلمة المرور غير صحيحة'
+        });
+    }
+
+    res.json({
+      token:
+        createSession(
+          username
+        ),
+
+      username:
+        username
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/*
+   هذا هو الإصلاح المهم:
+   لوحة التحكم القديمة كانت تستخدم
+   /api/admin/login
+   بينما الخادم كان يقبل /api/login فقط.
+*/
 
 app.post(
   '/api/login',
-  async (
-    req,
-    res,
-    next
-  ) => {
-    try {
-      const {
-        username,
-        password
-      } = req.body || {};
+  loginHandler
+);
 
-      const admin =
-        await getAdmin();
-
-      const valid =
-        username ===
-          admin.username &&
-        verifyPassword(
-          password || '',
-          admin.password_hash ||
-            admin.passwordHash
-        );
-
-      if (!valid) {
-        return res
-          .status(401)
-          .json({
-            error:
-              'اسم المستخدم أو كلمة المرور غير صحيحة'
-          });
-      }
-
-      res.json({
-        token:
-          createSession(
-            username
-          ),
-
-        username:
-          username
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
+app.post(
+  '/api/admin/login',
+  loginHandler
 );
 
 /* =========================================================
@@ -1528,7 +1567,9 @@ app.get(
       const db =
         await getData();
 
-      res.json(db);
+      res.json(
+        db
+      );
     } catch (error) {
       next(error);
     }
@@ -1554,10 +1595,6 @@ app.get(
       const admin =
         await getAdmin();
 
-      /*
-       * نرجع CMS أيضًا في مستوى واضح
-       * حتى تستطيع admin.html قراءته بسهولة.
-       */
       res.json({
         ...db,
 
@@ -1577,7 +1614,7 @@ app.get(
 );
 
 /* =========================================================
-   دوال الوصول إلى Collections
+   Collections
 ========================================================= */
 
 const LEGACY_COLLECTIONS = [
@@ -1595,6 +1632,11 @@ const CMS_COLLECTIONS = [
   'media',
   'pages',
   'navigation'
+];
+
+const ALL_COLLECTIONS = [
+  ...LEGACY_COLLECTIONS,
+  ...CMS_COLLECTIONS
 ];
 
 function getCollection(
@@ -1622,7 +1664,9 @@ function getCollection(
       key
     )
   ) {
-    ensureCms(db);
+    ensureCms(
+      db
+    );
 
     if (
       !Array.isArray(
@@ -1636,8 +1680,7 @@ function getCollection(
   }
 
   throw new Error(
-    'القسم غير معروف: ' +
-      key
+    `القسم غير معروف: ${key}`
   );
 }
 
@@ -1652,7 +1695,9 @@ function setCollection(
     )
   ) {
     db[key] =
-      Array.isArray(value)
+      Array.isArray(
+        value
+      )
         ? value
         : [];
 
@@ -1664,10 +1709,14 @@ function setCollection(
       key
     )
   ) {
-    ensureCms(db);
+    ensureCms(
+      db
+    );
 
     db.settings.cms[key] =
-      Array.isArray(value)
+      Array.isArray(
+        value
+      )
         ? value
         : [];
 
@@ -1675,8 +1724,7 @@ function setCollection(
   }
 
   throw new Error(
-    'القسم غير معروف: ' +
-      key
+    `القسم غير معروف: ${key}`
   );
 }
 
@@ -1684,17 +1732,9 @@ function setCollection(
    CRUD لجميع الأقسام
 ========================================================= */
 
-const ALL_COLLECTIONS = [
-  ...LEGACY_COLLECTIONS,
-  ...CMS_COLLECTIONS
-];
-
 for (
   const key of ALL_COLLECTIONS
 ) {
-  /*
-   * إضافة
-   */
   app.post(
     `/api/admin/${key}`,
     auth,
@@ -1731,18 +1771,19 @@ for (
           collection
         );
 
-        await saveData(db);
+        await saveData(
+          db
+        );
 
-        res.json(item);
+        res.json(
+          item
+        );
       } catch (error) {
         next(error);
       }
     }
   );
 
-  /*
-   * تعديل
-   */
   app.put(
     `/api/admin/${key}/:id`,
     auth,
@@ -1764,13 +1805,17 @@ for (
         const index =
           collection.findIndex(
             item =>
-              String(item.id) ===
+              String(
+                item.id
+              ) ===
               String(
                 req.params.id
               )
           );
 
-        if (index < 0) {
+        if (
+          index < 0
+        ) {
           return res
             .status(404)
             .json({
@@ -1781,6 +1826,7 @@ for (
 
         collection[index] = {
           ...collection[index],
+
           ...req.body,
 
           id:
@@ -1794,7 +1840,9 @@ for (
           collection
         );
 
-        await saveData(db);
+        await saveData(
+          db
+        );
 
         res.json(
           collection[index]
@@ -1805,9 +1853,6 @@ for (
     }
   );
 
-  /*
-   * حذف
-   */
   app.delete(
     `/api/admin/${key}/:id`,
     auth,
@@ -1829,7 +1874,9 @@ for (
         const old =
           collection.find(
             item =>
-              String(item.id) ===
+              String(
+                item.id
+              ) ===
               String(
                 req.params.id
               )
@@ -1847,7 +1894,9 @@ for (
         const filtered =
           collection.filter(
             item =>
-              String(item.id) !==
+              String(
+                item.id
+              ) !==
               String(
                 req.params.id
               )
@@ -1859,14 +1908,13 @@ for (
           filtered
         );
 
-        await saveData(db);
+        await saveData(
+          db
+        );
 
-        /*
-         * إذا كانت وسائط نحاول
-         * حذف الملف من التخزين أيضًا.
-         */
         if (
-          key === 'media' &&
+          key ===
+            'media' &&
           old.storagePath
         ) {
           try {
@@ -1875,7 +1923,9 @@ for (
             ) {
               await supabase
                 .storage
-                .from(BUCKET)
+                .from(
+                  BUCKET
+                )
                 .remove([
                   old.storagePath
                 ]);
@@ -1898,12 +1948,7 @@ for (
                 );
               }
             }
-          } catch (_) {
-            /*
-             * حذف السجل يظل ناجحًا
-             * حتى إذا تعذر حذف الملف.
-             */
-          }
+          } catch (_) {}
         }
 
         res.json({
@@ -1933,9 +1978,14 @@ app.get(
       const db =
         await getData();
 
+      ensureCms(
+        db
+      );
+
       res.json(
         db.settings.cms
-          .homepage || {}
+          .homepage ||
+          {}
       );
     } catch (error) {
       next(error);
@@ -1955,7 +2005,9 @@ app.put(
       const db =
         await getData();
 
-      ensureCms(db);
+      ensureCms(
+        db
+      );
 
       db.settings.cms.homepage =
         {
@@ -1965,10 +2017,13 @@ app.put(
           ...req.body
         };
 
-      await saveData(db);
+      await saveData(
+        db
+      );
 
       res.json(
-        db.settings.cms.homepage
+        db.settings.cms
+          .homepage
       );
     } catch (error) {
       next(error);
@@ -1993,7 +2048,8 @@ app.get(
         await getData();
 
       res.json(
-        db.settings || {}
+        db.settings ||
+          {}
       );
     } catch (error) {
       next(error);
@@ -2015,12 +2071,17 @@ app.put(
 
       db.settings = {
         ...db.settings,
+
         ...req.body
       };
 
-      ensureCms(db);
+      ensureCms(
+        db
+      );
 
-      await saveData(db);
+      await saveData(
+        db
+      );
 
       res.json(
         db.settings
@@ -2032,7 +2093,7 @@ app.put(
 );
 
 /* =========================================================
-   الحساب
+   حساب المدير
 ========================================================= */
 
 app.put(
@@ -2052,7 +2113,8 @@ app.put(
       if (
         !username ||
         !password ||
-        password.length < 8
+        password.length <
+          8
       ) {
         return res
           .status(400)
@@ -2062,7 +2124,9 @@ app.put(
           });
       }
 
-      if (USE_SUPABASE) {
+      if (
+        USE_SUPABASE
+      ) {
         const admin =
           await getAdmin();
 
@@ -2104,12 +2168,11 @@ app.put(
             password
           );
 
-        saveLocal(db);
+        saveLocal(
+          db
+        );
       }
 
-      /*
-       * إجبار تسجيل الدخول من جديد.
-       */
       sessions.clear();
 
       res.json({
@@ -2150,7 +2213,10 @@ const upload =
             file.originalname
           )
         ) {
-          cb(null, true);
+          cb(
+            null,
+            true
+          );
         } else {
           cb(
             new Error(
@@ -2165,7 +2231,9 @@ const upload =
 app.post(
   '/api/admin/upload',
   auth,
-  upload.single('file'),
+  upload.single(
+    'file'
+  ),
   async (
     req,
     res,
@@ -2181,22 +2249,19 @@ app.post(
           });
       }
 
-      /*
-       * التخزين المحلي
-       */
-      if (!USE_SUPABASE) {
+      if (
+        !USE_SUPABASE
+      ) {
         const ext =
-          path.extname(
-            req.file.originalname
-          ).toLowerCase();
+          path
+            .extname(
+              req.file
+                .originalname
+            )
+            .toLowerCase();
 
         const filename =
-          Date.now() +
-          '-' +
-          crypto
-            .randomBytes(5)
-            .toString('hex') +
-          ext;
+          `${Date.now()}-${crypto.randomBytes(5).toString('hex')}${ext}`;
 
         const filePath =
           path.join(
@@ -2210,15 +2275,15 @@ app.post(
         );
 
         const url =
-          '/uploads/' +
-          filename;
+          `/uploads/${filename}`;
 
         const mediaItem = {
           id:
             createId(),
 
           name:
-            req.file.originalname,
+            req.file
+              .originalname,
 
           url:
             url,
@@ -2227,7 +2292,8 @@ app.post(
             req.file.size,
 
           type:
-            req.file.mimetype,
+            req.file
+              .mimetype,
 
           storagePath:
             filename,
@@ -2239,13 +2305,17 @@ app.post(
         const db =
           await getData();
 
-        ensureCms(db);
+        ensureCms(
+          db
+        );
 
         db.settings.cms.media.unshift(
           mediaItem
         );
 
-        await saveData(db);
+        await saveData(
+          db
+        );
 
         return res.json({
           ok:
@@ -2255,13 +2325,15 @@ app.post(
             url,
 
           name:
-            req.file.originalname,
+            req.file
+              .originalname,
 
           size:
             req.file.size,
 
           type:
-            req.file.mimetype,
+            req.file
+              .mimetype,
 
           storagePath:
             filename,
@@ -2271,18 +2343,19 @@ app.post(
         });
       }
 
-      /*
-       * Supabase Storage
-       */
       const ext =
-        path.extname(
-          req.file.originalname
-        ).toLowerCase();
+        path
+          .extname(
+            req.file
+              .originalname
+          )
+          .toLowerCase();
 
       const safeBase =
         path
           .basename(
-            req.file.originalname,
+            req.file
+              .originalname,
             ext
           )
           .replace(
@@ -2296,42 +2369,42 @@ app.post(
         'file';
 
       const objectPath =
-        Date.now() +
-        '-' +
-        crypto
-          .randomBytes(5)
-          .toString('hex') +
-        '-' +
-        safeBase +
-        ext;
+        `${Date.now()}-${crypto.randomBytes(5).toString('hex')}-${safeBase}${ext}`;
 
       const {
         error
-      } = await supabase
-        .storage
-        .from(BUCKET)
-        .upload(
-          objectPath,
-          req.file.buffer,
-          {
-            contentType:
-              req.file.mimetype,
+      } =
+        await supabase
+          .storage
+          .from(
+            BUCKET
+          )
+          .upload(
+            objectPath,
+            req.file.buffer,
+            {
+              contentType:
+                req.file
+                  .mimetype,
 
-            upsert:
-              false
-          }
-        );
+              upsert:
+                false
+            }
+          );
 
       if (error) {
         throw error;
       }
 
       const {
-        data: publicData
+        data:
+          publicData
       } =
         supabase
           .storage
-          .from(BUCKET)
+          .from(
+            BUCKET
+          )
           .getPublicUrl(
             objectPath
           );
@@ -2344,7 +2417,8 @@ app.post(
           createId(),
 
         name:
-          req.file.originalname,
+          req.file
+            .originalname,
 
         url:
           url,
@@ -2353,7 +2427,8 @@ app.post(
           req.file.size,
 
         type:
-          req.file.mimetype,
+          req.file
+            .mimetype,
 
         storagePath:
           objectPath,
@@ -2365,13 +2440,17 @@ app.post(
       const db =
         await getData();
 
-      ensureCms(db);
+      ensureCms(
+        db
+      );
 
       db.settings.cms.media.unshift(
         mediaItem
       );
 
-      await saveData(db);
+      await saveData(
+        db
+      );
 
       res.json({
         ok:
@@ -2381,13 +2460,15 @@ app.post(
           url,
 
         name:
-          req.file.originalname,
+          req.file
+            .originalname,
 
         size:
           req.file.size,
 
         type:
-          req.file.mimetype,
+          req.file
+            .mimetype,
 
         storagePath:
           objectPath,
@@ -2417,7 +2498,9 @@ app.delete(
       const filename =
         req.params.filename;
 
-      if (!USE_SUPABASE) {
+      if (
+        !USE_SUPABASE
+      ) {
         const filePath =
           path.join(
             LOCAL_UPLOADS,
@@ -2444,12 +2527,15 @@ app.delete(
 
       const {
         error
-      } = await supabase
-        .storage
-        .from(BUCKET)
-        .remove([
-          filename
-        ]);
+      } =
+        await supabase
+          .storage
+          .from(
+            BUCKET
+          )
+          .remove([
+            filename
+          ]);
 
       if (error) {
         throw error;
@@ -2481,16 +2567,21 @@ app.delete(
       const db =
         await getData();
 
-      ensureCms(db);
+      ensureCms(
+        db
+      );
 
       const media =
-        db.settings.cms.media ||
+        db.settings.cms
+          .media ||
         [];
 
       const item =
         media.find(
           x =>
-            String(x.id) ===
+            String(
+              x.id
+            ) ===
             String(
               req.params.id
             )
@@ -2505,17 +2596,18 @@ app.delete(
           });
       }
 
-      /*
-       * حذف الملف من التخزين
-       */
       if (
         item.storagePath
       ) {
         try {
-          if (USE_SUPABASE) {
+          if (
+            USE_SUPABASE
+          ) {
             await supabase
               .storage
-              .from(BUCKET)
+              .from(
+                BUCKET
+              )
               .remove([
                 item.storagePath
               ]);
@@ -2538,23 +2630,23 @@ app.delete(
               );
             }
           }
-        } catch (_) {
-          /*
-           * نواصل حذف السجل
-           */
-        }
+        } catch (_) {}
       }
 
       db.settings.cms.media =
         media.filter(
           x =>
-            String(x.id) !==
+            String(
+              x.id
+            ) !==
             String(
               req.params.id
             )
         );
 
-      await saveData(db);
+      await saveData(
+        db
+      );
 
       res.json({
         ok:
@@ -2610,7 +2702,8 @@ app.get(
     let cms =
       false;
 
-    let counts = {};
+    let counts =
+      {};
 
     try {
       const db =
@@ -2626,55 +2719,67 @@ app.get(
         services:
           db.settings?.cms
             ?.services
-            ?.length || 0,
+            ?.length ||
+          0,
 
         stats:
           db.settings?.cms
             ?.stats
-            ?.length || 0,
+            ?.length ||
+          0,
 
         research:
           db.settings?.cms
             ?.research
-            ?.length || 0,
+            ?.length ||
+          0,
 
         media:
           db.settings?.cms
             ?.media
-            ?.length || 0,
+            ?.length ||
+          0,
 
         pages:
           db.settings?.cms
             ?.pages
-            ?.length || 0,
+            ?.length ||
+          0,
 
         navigation:
           db.settings?.cms
             ?.navigation
-            ?.length || 0,
+            ?.length ||
+          0,
 
         announcements:
           db.announcements
-            ?.length || 0,
+            ?.length ||
+          0,
 
         programs:
           db.programs
-            ?.length || 0,
+            ?.length ||
+          0,
 
         news:
           db.news
-            ?.length || 0,
+            ?.length ||
+          0,
 
         documents:
           db.documents
-            ?.length || 0,
+            ?.length ||
+          0,
 
         hero:
           db.hero
-            ?.length || 0
+            ?.length ||
+          0
       };
     } catch (_) {
-      cms = false;
+      cms =
+        false;
     }
 
     res.json({
@@ -2774,24 +2879,17 @@ app.use(
 
 (async () => {
   try {
-    if (USE_SUPABASE) {
+    if (
+      USE_SUPABASE
+    ) {
       await ensureAdmin();
 
-      /*
-       * هذه الخطوة مهمة جدًا:
-       * عند تشغيل Render سيتم تلقائيًا
-       * تهيئة site_data بالأقسام الناقصة.
-       */
       await getSupabaseData();
 
       console.log(
         'Supabase database and CMS are ready.'
       );
     } else {
-      /*
-       * في حالة عدم وجود Supabase
-       * يستخدم النظام db.json.
-       */
       loadLocal();
 
       console.log(
